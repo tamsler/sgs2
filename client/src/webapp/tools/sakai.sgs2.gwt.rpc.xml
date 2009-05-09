@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<registration>
+	<tool id="sakai.sgs2.gwt.rpc" title="SGS 2"
+		description="Sakai Groovy Shell 2.">
+
+		<category name="course" />
+		<category name="project" />
+	</tool>
+</registration>
