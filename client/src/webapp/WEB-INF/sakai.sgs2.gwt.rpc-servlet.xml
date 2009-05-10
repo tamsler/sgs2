@@ -3,19 +3,21 @@
 
 <beans>
 
-	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+	<bean id="myServletForwardingController"
+		class="org.springframework.web.servlet.mvc.ServletForwardingController">
+		<property name="servletName">
+			<value>sakai.sgs2.gwt</value>
+		</property>
+	</bean>
+	
+	<bean id="urlMapping"
+		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
 		<property name="mappings">
 			<map>
 				<entry key="/**/rpc/sgs2" value-ref="SgsService" />
-				
 				<entry key="/*" value-ref="myServletForwardingController" />
 			</map>
 		</property>
 	</bean>
-
-	<bean id="myServletForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
- 		<property name="servletName"><value>sakai.sgs2.gwt</value></property>
- 	</bean>
- 	
-
+	
 </beans>

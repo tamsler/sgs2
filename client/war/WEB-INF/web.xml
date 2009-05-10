@@ -12,13 +12,13 @@
   
   <!-- Servlets -->
   <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>org.sakaiproject.sgs2.server.GreetingServiceImpl</servlet-class>
+    <servlet-name>sgs2.rpc.sgs2</servlet-name>
+    <servlet-class>org.sakaiproject.sgs2.server.mock.GroovyShellServiceMockImpl</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/sgs2/greet</url-pattern>
+    <servlet-name>sgs2.rpc.sgs2</servlet-name>
+    <url-pattern>/sgs2/rpc/sgs2</url-pattern>
   </servlet-mapping>
 
 </web-app>

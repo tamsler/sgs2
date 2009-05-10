@@ -20,9 +20,8 @@ public class GwtRedirectServlet extends DefaultServlet {
 		String relativePath = getRelativePath(request);	  
 		
 		if (relativePath.equals("/")) {
-			System.out.println("DEBUG: requestURI = " + request.getRequestURI());
-			response.sendRedirect(request.getRequestURI() + "/" + DEFAULT_PAGE);
-			
+
+			response.sendRedirect(request.getRequestURI() + "/" + DEFAULT_PAGE);			
 			return;
 		}	
 			

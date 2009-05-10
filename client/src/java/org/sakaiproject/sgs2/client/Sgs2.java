@@ -30,16 +30,16 @@ public class Sgs2 implements EntryPoint {
 			+ "connection and try again.";
 
 	/**
-	 * Create a remote service proxy to talk to the server-side Greeting service.
+	 * Create a remote service proxy to talk to the server-side Groovy Shell Service.
 	 */
-	private GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
+	private GroovyShellServiceAsync groovyShellService = GWT.create(GroovyShellService.class);
 
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		
-		((ServiceDefTarget) greetingService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
+		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
 				
 		final Button sendButton = new Button("Send");
 		final TextBox nameField = new TextBox();
@@ -111,7 +111,7 @@ public class Sgs2 implements EntryPoint {
 				String textToServer = nameField.getText();
 				textToServerLabel.setText(textToServer);
 				serverResponseLabel.setText("");
-				greetingService.greetServer(textToServer,
+				groovyShellService.submitSourceCode(textToServer,
 						new AsyncCallback<String>() {
 							public void onFailure(Throwable caught) {
 								// Show the RPC error message to the user

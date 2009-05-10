@@ -3,7 +3,7 @@
 
 <beans>
 
-	<bean id="SgsService" class="org.sakaiproject.sgs2.server.GreetingServiceImpl">
+	<bean id="SgsService" class="org.sakaiproject.sgs2.server.GroovyShellServiceImpl">
 		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
 	</bean>
 </beans>
