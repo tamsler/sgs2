@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+		<property name="mappings">
+			<map>
+				<entry key="/**/rpc/sgs2" value-ref="SgsService" />
+				
+				<entry key="/*" value-ref="myServletForwardingController" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="myServletForwardingController" class="org.springframework.web.servlet.mvc.ServletForwardingController">
+ 		<property name="servletName"><value>sakai.sgs2.gwt</value></property>
+ 	</bean>
+ 	
+
+</beans>

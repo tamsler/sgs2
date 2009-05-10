@@ -15,4 +15,6 @@
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='org.sakaiproject.sgs2.client.Sgs2'/>
+  
+  <servlet path="/rpc/sgs2" class="org.sakaiproject.sgs2.server.GreetingServiceImpl"/>
 </module>
