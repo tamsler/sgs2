@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <registration>
-	<tool id="sakai.sgs2.gwt.rpc" title="SGS 2"
-		description="Sakai Groovy Shell 2.">
+	<tool id="sakai.sgs2.gwt.rpc"
+		  title="SGS 2"
+		  description="Sakai Groovy Shell 2">
 
-		<category name="course" />
-		<category name="project" />
+		<category name="sakai.admin" />
+		<configuration name="height" value="1000px" />
 	</tool>
 </registration>

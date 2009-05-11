@@ -1,2 +1,6 @@
 Sakai Groovy Shell 2
 
+- May 9, 2006
+-- Started to rewrite the Sakai Groovy Shell tool
+-- The new name is Sakai Groovy Shell 2 (SGS2)
+-- Using the Google Web Toolkit (GWT)

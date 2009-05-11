@@ -57,9 +57,6 @@
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 	
-	
-	
-	
 	<welcome-file-list><welcome-file>/Sgs2.html</welcome-file></welcome-file-list>
 	
 </web-app>
