@@ -11,20 +11,7 @@ h1 {
   font-size: 16pt;
 }
 
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
-.dialogVPanel {
-  margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
+.gwt-HTML {
+  border: 1px solid #ACA899;
+  padding: 5px;
 }

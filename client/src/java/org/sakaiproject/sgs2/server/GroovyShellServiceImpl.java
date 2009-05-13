@@ -18,19 +18,61 @@
 
 package org.sakaiproject.sgs2.server;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.user.api.UserDirectoryService;
 
 public class GroovyShellServiceImpl extends GWTSpringController implements GroovyShellService {
 
+	private static final Log LOG = LogFactory.getLog(GroovyShellServiceImpl.class);
+
 	private static final long serialVersionUID = 1L;
 	private UserDirectoryService userDirectoryService;
 	
-	public String submit(String sourceCode) {
+	public ScriptExecutionResult submit(String sourceCode) {
 
 		System.out.println("DEBUG: source code = " + sourceCode);
-		return userDirectoryService.getCurrentUser().getDisplayName();
+		//return userDirectoryService.getCurrentUser().getDisplayName();
+		
+		StringWriter output = new StringWriter();
+		Binding binding = new Binding();
+		binding.setVariable("out", new PrintWriter(output));
+		
+		StringWriter stackTrace = new StringWriter();
+		PrintWriter errWriter = new PrintWriter(stackTrace);
+		
+		Object result = null;
+		
+		try {
+			
+			result = new GroovyShell(binding).evaluate(sourceCode);
+			
+		} catch (MultipleCompilationErrorsException e) {
+			
+			  stackTrace.append(e.getMessage());
+			  
+		} catch (Throwable t) {
+			  
+			  t.printStackTrace(errWriter);
+		}
+		
+		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
+		scriptExecutionResult.setOutput(output.toString());
+		scriptExecutionResult.setResult((null == result) ? null : result.toString());
+		scriptExecutionResult.setStackTrace(stackTrace.toString());
+		
+		return scriptExecutionResult;
+
 	}
 	
 	// DI

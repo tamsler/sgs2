@@ -103,6 +103,12 @@
 			<artifactId>sakai-entity-api</artifactId>
 			<version>${sakai.version}</version>
 		</dependency>
+		<dependency>
+      		<groupId>groovy</groupId>
+      		<artifactId>groovy-all</artifactId>
+      		<version>1.6.2</version>
+    	</dependency>
+		
 	</dependencies>
 	<build>
 		<directory>target</directory>

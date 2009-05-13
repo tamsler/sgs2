@@ -19,6 +19,7 @@
 package org.sakaiproject.sgs2.server.mock;
 
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -26,9 +27,13 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	private static final long serialVersionUID = 1L;
 
-	public String submit(String sourceCode) {
-
-		return "Groovy Shell Service received source code = " + sourceCode;
+	public ScriptExecutionResult submit(String sourceCode) {
+		
+		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
+		scriptExecutionResult.setOutput("Hello World Output");
+		scriptExecutionResult.setResult("Hello World Result");
+		scriptExecutionResult.setStackTrace("Hello World Stack Trace");
+		return scriptExecutionResult;
 	}
 
 }

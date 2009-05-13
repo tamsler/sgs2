@@ -22,5 +22,5 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GroovyShellServiceAsync {
 	
-	void submit(String sourceCode, AsyncCallback<String> callback);
+	void submit(String sourceCode, AsyncCallback<ScriptExecutionResult> callback);
 }
