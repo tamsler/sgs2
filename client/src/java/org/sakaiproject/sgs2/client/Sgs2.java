@@ -23,6 +23,9 @@ import java.util.Date;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.IFrameElement;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
@@ -57,7 +60,18 @@ public class Sgs2 implements EntryPoint {
 	private GroovyShellServiceAsync groovyShellService = GWT.create(GroovyShellService.class);
 
 	public void onModuleLoad() {
-
+		
+		// Resize parent Sakai iframe
+		Document doc = getWindowParentDocument();
+		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
+		for(int i = 0; i < nodeList.getLength(); i++) {
+			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
+			if(iframe.getId().startsWith("Main")) {
+				iframe.setAttribute("style", "height: 620px;");
+				break;
+			}
+		}
+		
 		// This is a reference for the declared servlet in Sgs2.gwt.xml
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
 		

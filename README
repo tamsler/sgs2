@@ -1,6 +1,11 @@
-Sakai Groovy Shell 2
+Sakai Groovy Shell 2 (SGS2)
+---------------------------
 
-- May 9, 2006
+- May 13, 2009
+-- UI : Using GWT v1.6 : The tool loads now correctly inside Sakai
+-- Script results are reported back to the client UI (output, result, stack trace, history) : done
+
+- May 9, 2009
 -- Started to rewrite the Sakai Groovy Shell tool
 -- The new name is Sakai Groovy Shell 2 (SGS2)
 -- Using the Google Web Toolkit (GWT)

@@ -3,8 +3,5 @@
 	<tool id="sakai.sgs2.gwt.rpc"
 		  title="SGS 2"
 		  description="Sakai Groovy Shell 2">
-
-		<category name="sakai.admin" />
-		<configuration name="height" value="1000px" />
 	</tool>
 </registration>
