@@ -104,9 +104,9 @@
 			<version>${sakai.version}</version>
 		</dependency>
 		<dependency>
-      		<groupId>groovy</groupId>
+      		<groupId>org.codehaus.groovy</groupId>
       		<artifactId>groovy-all</artifactId>
-      		<version>1.6.2</version>
+      		<version>1.6.3</version>
     	</dependency>
 		
 	</dependencies>
