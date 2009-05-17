@@ -18,6 +18,13 @@
 
 package org.sakaiproject.sgs2.server.mock;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 
@@ -29,10 +36,33 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	public ScriptExecutionResult submit(String sourceCode) {
 		
+		StringWriter output = new StringWriter();
+		Binding binding = new Binding();
+		binding.setVariable("out", new PrintWriter(output));
+		
+		StringWriter stackTrace = new StringWriter();
+		PrintWriter errWriter = new PrintWriter(stackTrace);
+		
+		Object result = null;
+		
+		try {
+			
+			result = new GroovyShell(binding).evaluate(sourceCode);
+			
+		} catch (MultipleCompilationErrorsException e) {
+			
+			  stackTrace.append(e.getMessage());
+			  
+		} catch (Throwable t) {
+			  
+			  t.printStackTrace(errWriter);
+		}
+		
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput("Hello World Output");
-		scriptExecutionResult.setResult("Hello World Result");
-		scriptExecutionResult.setStackTrace("Hello World Stack Trace");
+		scriptExecutionResult.setOutput(output.toString());
+		scriptExecutionResult.setResult((null == result) ? null : result.toString());
+		scriptExecutionResult.setStackTrace(stackTrace.toString());
+		
 		return scriptExecutionResult;
 	}
 
