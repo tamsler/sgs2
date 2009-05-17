@@ -3,7 +3,55 @@
 
 <beans>
 
+	<bean id="org.sakaiproject.sgs2.SessionFactory"
+		parent="org.sakaiproject.springframework.orm.hibernate.SessionFactoryBase">
+		<property name="mappingResources">
+			<list>
+				<value>
+					org/sakaiproject/sgs2/server/hibernate/Script.hbm.xml
+				</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.sgs2.HibernateTemplate"
+		class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory">
+			<ref bean="org.sakaiproject.sgs2.SessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.sgs2.HibernateTransactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory">
+			<ref bean="org.sakaiproject.sgs2.SessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="GroovyShellManagerTarget"
+		class="org.sakaiproject.sgs2.server.GroovyShellManagerImpl">
+		<property name="sessionFactory">
+			<ref bean="org.sakaiproject.sgs2.SessionFactory" />
+		</property>
+	</bean>
+	
+	<bean id="org.sakaiproject.sgs2.server.GroovyShellManager"
+		class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager">
+			<ref bean="org.sakaiproject.sgs2.HibernateTransactionManager" />
+		</property>
+		<property name="target" ref="GroovyShellManagerTarget" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+	
 	<bean id="SgsService" class="org.sakaiproject.sgs2.server.GroovyShellServiceImpl">
-		<property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
+		<property name="userDirectoryService"
+			ref="org.sakaiproject.user.api.UserDirectoryService" />
+		<property name="groovyShellManager"
+			ref="org.sakaiproject.sgs2.server.GroovyShellManager" />
 	</bean>
 </beans>

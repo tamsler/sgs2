@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+	
+<hibernate-mapping>
+
+	<class name="org.sakaiproject.sgs2.client.model.Script" table="SGS2_SCRIPT_T">
+	
+		<id name="id" type="long" column="ID">
+	    	<generator class="native">
+                <param name="sequence">SGS2_SCRIPT_ID_S</param>
+	    	</generator>
+		</id>
+		<property name="script" type="text" not-null="true">
+            <column name="SCRIPT"/>
+        </property>
+		<property name="userEid" type="string" length="255" not-null="true">
+            <column name="USER_EID"/>
+        </property>
+		<property name="executionDate" type="timestamp" not-null="true">
+            <column name="EXECUTION_DATE"/>
+        </property>	
+	</class>
+	
+</hibernate-mapping>

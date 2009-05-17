@@ -23,6 +23,7 @@ import groovy.lang.GroovyShell;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +31,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.user.api.UserDirectoryService;
 
 public class GroovyShellServiceImpl extends GWTSpringController implements GroovyShellService {
@@ -38,6 +40,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 
 	private static final long serialVersionUID = 1L;
 	private UserDirectoryService userDirectoryService;
+	private GroovyShellManager groovyShellManager;
 	
 	public ScriptExecutionResult submit(String sourceCode) {
 
@@ -66,19 +69,39 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			  t.printStackTrace(errWriter);
 		}
 		
+		// Persisting script information
+		Script script = new Script();
+		script.setScript(sourceCode);
+		script.setUserEid(userDirectoryService.getCurrentUser().getEid());
+		script.setExecutionDate(new Date());
+		
+		try {
+			
+			groovyShellManager.save(script);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			stackTrace.append(e.getMessage());
+			LOG.error("Was not able to save script object");
+		}
+		
+		// Sending result back to the client
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
 		scriptExecutionResult.setOutput(output.toString());
 		scriptExecutionResult.setResult((null == result) ? null : result.toString());
 		scriptExecutionResult.setStackTrace(stackTrace.toString());
 		
 		return scriptExecutionResult;
-
 	}
 	
 	// DI
 	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
-
 		this.userDirectoryService = userDirectoryService;
+	}
+	
+	// DI
+	public void setGroovyShellManager(GroovyShellManager groovyShellManager) {
+		this.groovyShellManager = groovyShellManager;
 	}
 
 }
