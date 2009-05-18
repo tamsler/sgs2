@@ -3,4 +3,6 @@ java.lang.Exception, false
 java.lang.RuntimeException, false
 java.lang.String, true
 java.lang.Throwable, false
+org.sakaiproject.sgs2.client.AutoSaveResult, true
 org.sakaiproject.sgs2.client.ScriptExecutionResult, true
+org.sakaiproject.sgs2.client.ScriptParseResult, true

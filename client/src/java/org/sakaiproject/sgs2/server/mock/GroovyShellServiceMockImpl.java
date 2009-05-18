@@ -20,13 +20,23 @@ package org.sakaiproject.sgs2.server.mock;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import groovy.lang.Script;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.sakaiproject.sgs2.client.AutoSaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.ScriptParseResult;
+import org.sakaiproject.sgs2.server.GroovyShellServiceImpl;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -34,15 +44,18 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	private static final long serialVersionUID = 1L;
 
+	private static final Log LOG = LogFactory.getLog(GroovyShellServiceImpl.class);
+
+	private Map<String, String> autoSaveMap = new HashMap<String, String>();
+
+	// Mock Impl
 	public ScriptExecutionResult submit(String sourceCode) {
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
 		binding.setVariable("out", new PrintWriter(output));
-		
 		StringWriter stackTrace = new StringWriter();
-		PrintWriter errWriter = new PrintWriter(stackTrace);
-		
+		PrintWriter errorWriter = new PrintWriter(stackTrace);
 		Object result = null;
 		
 		try {
@@ -55,7 +68,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			  
 		} catch (Throwable t) {
 			  
-			  t.printStackTrace(errWriter);
+			  t.printStackTrace(errorWriter);
 		}
 		
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
@@ -65,5 +78,46 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 		
 		return scriptExecutionResult;
 	}
+	
+	// Mock Impl
+	public ScriptParseResult parse(String sourceCode) {
+			
+		StringWriter stackTrace = new StringWriter();
+		PrintWriter errWriter = new PrintWriter(stackTrace);
+		
+		Script script = null;
+		
+		try {
+			
+			script = new GroovyShell().parse(sourceCode);
+			
+		} catch (CompilationFailedException e) {
+			
+			  stackTrace.append(e.getMessage());
+			  
+		} catch (Throwable t) {
+			  
+			  t.printStackTrace(errWriter);
+		}
+		
+		ScriptParseResult scriptParseResult = new ScriptParseResult();
+		scriptParseResult.setStackTrace(stackTrace.toString());
+		
+		return scriptParseResult;
+	}
+	
+	// Mock Impl
+	public AutoSaveResult autoSave(String uuid, String sourceCode) {
 
+		autoSaveMap.put(uuid, sourceCode);
+		AutoSaveResult autoSaveResult = new AutoSaveResult();
+		autoSaveResult.setResult(uuid);
+		LOG.info("AutoSave: uuid = " + uuid + " : sourceCode = " + sourceCode);
+		return autoSaveResult;
+	}
+	
+	// Mock Impl
+	public String initAutoSave() {
+		return UUID.randomUUID().toString();
+	}
 }

@@ -24,13 +24,17 @@ import groovy.lang.GroovyShell;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
+import org.sakaiproject.sgs2.client.AutoSaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.user.api.UserDirectoryService;
 
@@ -45,14 +49,13 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	public ScriptExecutionResult submit(String sourceCode) {
 
 		System.out.println("DEBUG: source code = " + sourceCode);
-		//return userDirectoryService.getCurrentUser().getDisplayName();
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
 		binding.setVariable("out", new PrintWriter(output));
 		
 		StringWriter stackTrace = new StringWriter();
-		PrintWriter errWriter = new PrintWriter(stackTrace);
+		PrintWriter errorWriter = new PrintWriter(stackTrace);
 		
 		Object result = null;
 		
@@ -66,7 +69,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			  
 		} catch (Throwable t) {
 			  
-			  t.printStackTrace(errWriter);
+			  t.printStackTrace(errorWriter);
 		}
 		
 		// Persisting script information
@@ -94,6 +97,51 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return scriptExecutionResult;
 	}
 	
+	public ScriptParseResult parse(String sourceCode) {
+		
+		StringWriter stackTrace = new StringWriter();
+		PrintWriter errorWriter = new PrintWriter(stackTrace);
+		
+		groovy.lang.Script script = null;
+		
+		try {
+			
+			script = new GroovyShell().parse(sourceCode);
+			
+		} catch (CompilationFailedException e) {
+			
+			  stackTrace.append(e.getMessage());
+			  
+		} catch (Throwable t) {
+			  
+			  t.printStackTrace(errorWriter);
+		}
+		
+		ScriptParseResult scriptParseResult = new ScriptParseResult();
+		scriptParseResult.setStackTrace(stackTrace.toString());
+		
+		return scriptParseResult;
+	}
+	
+	public AutoSaveResult autoSave(String uuid, String sourceCode) {
+		
+		LOG.info("Auto Save uuid = " + uuid);
+		
+		// FIXME : Add DB persistence
+		AutoSaveResult autoSaveResult = new AutoSaveResult();
+		autoSaveResult.setResult(uuid);
+		return autoSaveResult;
+	}
+	
+	public String initAutoSave() {
+				
+		String uuid = UUID.randomUUID().toString();
+		
+		LOG.info("Init Auto Save : uuid = " + uuid);
+		
+		return uuid;
+	}
+	
 	// DI
 	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
 		this.userDirectoryService = userDirectoryService;
@@ -103,5 +151,4 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	public void setGroovyShellManager(GroovyShellManager groovyShellManager) {
 		this.groovyShellManager = groovyShellManager;
 	}
-
 }

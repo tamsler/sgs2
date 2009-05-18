@@ -24,5 +24,11 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("shell")
 public interface GroovyShellService extends RemoteService {
 
-	ScriptExecutionResult submit(String sourceCode);
+	public ScriptExecutionResult submit(String sourceCode);
+	
+	public ScriptParseResult parse(String sourceCode);
+	
+	public AutoSaveResult autoSave(String uuid, String sourceCode);
+	
+	public String initAutoSave();
 }
