@@ -115,6 +115,8 @@ public class Sgs2 implements EntryPoint {
 		// This is a reference for the declared servlet in Sgs2.gwt.xml
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
 		
+		configureSakaiParentIframe();
+		
 		submitAsyncCallback = getSubmitAsyncCallback();
 		parseAsyncCallback = getParseAsyncCallback();
 		initAutoSaveAsyncCallback = getInitAutoSaveAsyncCallback();
@@ -127,17 +129,6 @@ public class Sgs2 implements EntryPoint {
 	}
 	
 	public void onModuleLoad() {
-		
-		// Resize parent Sakai iframe
-		Document doc = getWindowParentDocument();
-		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
-		for(int i = 0; i < nodeList.getLength(); i++) {
-			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
-			if(iframe.getId().startsWith("Main")) {
-				iframe.setAttribute("style", "height: 620px;");
-				break;
-			}
-		}
 		
 		// Getting a UUID from the server 
 		groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
@@ -165,13 +156,13 @@ public class Sgs2 implements EntryPoint {
 		MenuBar analyzeMenu = new MenuBar(true);
 		analyzeMenu.addItem("Hello World", new Command() {
 			public void execute() {
-				submitButton.setEnabled(false);
+				beforeSubmit();
 				groovyShellService.submit("println 'Hello World'", submitAsyncCallback);
 			}
 		});
 		analyzeMenu.addItem("4 + 4", new Command() {
 			public void execute() {
-				submitButton.setEnabled(false);
+				beforeSubmit();
 				groovyShellService.submit("4 + 4", submitAsyncCallback);
 			}
 		});
@@ -228,12 +219,14 @@ public class Sgs2 implements EntryPoint {
 		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		buttonPanel.setWidth("100%");
 		buttonPanel.setSpacing(3);
+		buttonPanel.add(parseButton);
+		buttonPanel.add(submitButton);
+		buttonPanel.setCellHorizontalAlignment(submitButton, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonPanel.setCellHorizontalAlignment(parseButton, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		// Adding widgets to vertical panel
 		inputVerticalPanel.add(menuAndStatusPanel);
 		inputVerticalPanel.add(textArea);
-		buttonPanel.add(parseButton);
-		buttonPanel.add(submitButton);
 		inputVerticalPanel.add(buttonPanel);
 		mainVerticalPanel.add(inputVerticalPanel);
 		mainVerticalPanel.add(resultTabPanel);
@@ -251,6 +244,33 @@ public class Sgs2 implements EntryPoint {
 	}
 
 	// Methods
+	
+	private void configureSakaiParentIframe() {
+		
+		// Resize parent Sakai iframe
+		Document doc = getWindowParentDocument();
+		NodeList<Element> nodeList = doc.getElementsByTagName("iframe");
+		for(int i = 0; i < nodeList.getLength(); i++) {
+			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
+			if(iframe.getId().startsWith("Main")) {
+				iframe.setAttribute("style", "height: 620px;");
+				break;
+			}
+		}
+	}
+	
+	private void beforeSubmit() {
+		
+		submitButton.setEnabled(false);
+
+		// Reset panels except the history one
+		outputFlowPanel.clear();
+		resultFlowPanel.clear();
+		stackTraceFlowPanel.clear();
+		consoleFlowPanel.clear();
+		resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
+	}
+	
 	private ClickHandler getParseClickHandler() {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -263,17 +283,12 @@ public class Sgs2 implements EntryPoint {
 	
 	private ClickHandler getSubmitClickHandler() {
 		return new ClickHandler() {
+			
 			public void onClick(ClickEvent event) {
-
-				submitButton.setEnabled(false);
+				
+				beforeSubmit();
+				
 				String sourceCode = textArea.getText();
-
-				// Reset panels except the history one
-				outputFlowPanel.clear();
-				resultFlowPanel.clear();
-				stackTraceFlowPanel.clear();
-				consoleFlowPanel.clear();
-				resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
 				groovyShellService.submit(sourceCode, submitAsyncCallback);
 			}
 		};

@@ -47,8 +47,6 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	private GroovyShellManager groovyShellManager;
 	
 	public ScriptExecutionResult submit(String sourceCode) {
-
-		System.out.println("DEBUG: source code = " + sourceCode);
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
@@ -100,7 +98,6 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	public ScriptParseResult parse(String sourceCode) {
 		
 		StringWriter stackTrace = new StringWriter();
-		PrintWriter errorWriter = new PrintWriter(stackTrace);
 		
 		groovy.lang.Script script = null;
 		
@@ -108,13 +105,13 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			
 			script = new GroovyShell().parse(sourceCode);
 			
-		} catch (CompilationFailedException e) {
+		} catch (CompilationFailedException cfe) {
 			
-			  stackTrace.append(e.getMessage());
+			  stackTrace.append(cfe.getMessage());
 			  
-		} catch (Throwable t) {
+		} catch (Exception e) {
 			  
-			  t.printStackTrace(errorWriter);
+			 stackTrace.append(e.getMessage());
 		}
 		
 		ScriptParseResult scriptParseResult = new ScriptParseResult();

@@ -83,7 +83,6 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	public ScriptParseResult parse(String sourceCode) {
 			
 		StringWriter stackTrace = new StringWriter();
-		PrintWriter errWriter = new PrintWriter(stackTrace);
 		
 		Script script = null;
 		
@@ -91,13 +90,13 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			
 			script = new GroovyShell().parse(sourceCode);
 			
-		} catch (CompilationFailedException e) {
+		} catch (CompilationFailedException cfe) {
 			
-			  stackTrace.append(e.getMessage());
+			  stackTrace.append(cfe.getMessage());
 			  
-		} catch (Throwable t) {
+		} catch (Exception e) {
 			  
-			  t.printStackTrace(errWriter);
+			 stackTrace.append(e.getMessage());
 		}
 		
 		ScriptParseResult scriptParseResult = new ScriptParseResult();
