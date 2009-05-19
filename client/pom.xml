@@ -26,8 +26,8 @@
 <!--  convenience to define GWT version in one place -->
 	<properties>
 		<gwtVersion>1.6.4</gwtVersion>
-		<platform>mac</platform>
-<!-- This could also be done via the bellow defiend profiles -->
+		<!-- <platform>mac</platform> -->
+<!-- This could also be done via the bellow defined profiles -->
 	</properties>
 	<dependencies>
 <!--  GWT deps (from central repo) -->
@@ -240,7 +240,7 @@
 				<platform>windows</platform>
 			</properties>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 				<os>
 					<family>windows</family>
 				</os>
@@ -264,7 +264,7 @@
 				<platform>linux</platform>
 			</properties>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 				<os>
 					<name>linux</name>
 				</os>
