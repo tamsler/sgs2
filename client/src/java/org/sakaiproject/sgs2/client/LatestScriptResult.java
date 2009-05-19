@@ -20,25 +20,26 @@ package org.sakaiproject.sgs2.client;
 
 import java.io.Serializable;
 
-public class ScriptParseResult implements Serializable {
+public class LatestScriptResult implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String stackTrace;
-	private String error;
 
-	public String getStackTrace() {
-		return stackTrace;
+	private String scriptUuid;
+	private String script;
+
+	public String getScriptUuid() {
+		return scriptUuid;
 	}
-	public void setStackTrace(String stackTrace) {
-		this.stackTrace = stackTrace;
+
+	public void setScriptUuid(String scriptUuid) {
+		this.scriptUuid = scriptUuid;
 	}
-	public String getError() {
-		return error;
+
+	public String getScript() {
+		return script;
 	}
-	public void setError(String error) {
-		this.error = error;
+
+	public void setScript(String script) {
+		this.script = script;
 	}
-	
-	
 }

@@ -11,15 +11,28 @@
                 <param name="sequence">SGS2_SCRIPT_ID_S</param>
 	    	</generator>
 		</id>
-		<property name="script" type="text" not-null="true">
+		<property name="userId" type="string" length="255" not-null="true">
+            <column name="USER_ID"/>
+        </property>
+		<property name="script" type="text" not-null="false">
             <column name="SCRIPT"/>
         </property>
-		<property name="userEid" type="string" length="255" not-null="true">
-            <column name="USER_EID"/>
+        <property name="output" type="text" not-null="false">
+            <column name="OUTPUT"/>
         </property>
-		<property name="executionDate" type="timestamp" not-null="true">
-            <column name="EXECUTION_DATE"/>
-        </property>	
+        <property name="result" type="text" not-null="false">
+            <column name="RESULT"/>
+        </property>
+        <property name="stackTrace" type="text" not-null="false">
+            <column name="STACK_TRACE"/>
+        </property>
+        <property name="actionType" type="string" not-null="true">
+            <column name="ACTION_TYPE"/>
+        </property>
+        <property name="actionDate" type="timestamp" not-null="true">
+            <column name="ACTION_DATE"/>
+        </property>
+        
 	</class>
 	
 </hibernate-mapping>

@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.sakaiproject.sgs2.client.AutoSaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.LatestScriptResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.server.GroovyShellServiceImpl;
@@ -72,9 +74,9 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 		}
 		
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput(output.toString());
-		scriptExecutionResult.setResult((null == result) ? null : result.toString());
-		scriptExecutionResult.setStackTrace(stackTrace.toString());
+		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : output.toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : result.toString());
+		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
 		
 		return scriptExecutionResult;
 	}
@@ -110,7 +112,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 		autoSaveMap.put(uuid, sourceCode);
 		AutoSaveResult autoSaveResult = new AutoSaveResult();
-		autoSaveResult.setResult(uuid);
+		autoSaveResult.setResult("");
 		LOG.info("AutoSave: uuid = " + uuid + " : sourceCode = " + sourceCode);
 		return autoSaveResult;
 	}
@@ -118,5 +120,26 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	// Mock Impl
 	public String initAutoSave() {
 		return UUID.randomUUID().toString();
+	}
+
+	public LatestScriptResult getLatestScript() {
+		// TODO : the autoSaveMap should store a script object with user data and time stamp
+		if(autoSaveMap.size() == 0) {
+			
+			return null;
+		}
+		else {
+			
+			LatestScriptResult latestScriptResult = new LatestScriptResult();
+			Set<String> uuids = autoSaveMap.keySet();
+			
+			for(String uuid : uuids) {
+				latestScriptResult.setScriptUuid(uuid);
+				latestScriptResult.setScript(autoSaveMap.get(uuid));
+				break;
+			}
+			
+			return latestScriptResult;
+		}
 	}
 }

@@ -23,6 +23,15 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("shell")
 public interface GroovyShellService extends RemoteService {
+	
+	enum ActionType { AUTO_SAVE("auto_save"), USER_SAVE("user_save"), SCRIPT_EXECUTION("script_execution");
+	
+		public String name;
+		
+		ActionType(String name) {
+			this.name = name;
+		}
+	}
 
 	public ScriptExecutionResult submit(String sourceCode);
 	
@@ -31,4 +40,6 @@ public interface GroovyShellService extends RemoteService {
 	public AutoSaveResult autoSave(String uuid, String sourceCode);
 	
 	public String initAutoSave();
+	
+	public LatestScriptResult getLatestScript();
 }

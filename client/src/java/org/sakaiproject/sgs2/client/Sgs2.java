@@ -96,8 +96,10 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptExecutionResult> submitAsyncCallback = null;
 	private AsyncCallback<ScriptParseResult> parseAsyncCallback = null;
 	private AsyncCallback<String> initAutoSaveAsyncCallback = null;
+	private AsyncCallback<LatestScriptResult> getLatestScript = null;
 	
 	// Commands
+	private Command menuFileNewCommand = null;
 	private Command menuFileSaveCommand = null;
 	private Command menuFileInfoCommand = null;
 	
@@ -120,7 +122,9 @@ public class Sgs2 implements EntryPoint {
 		submitAsyncCallback = getSubmitAsyncCallback();
 		parseAsyncCallback = getParseAsyncCallback();
 		initAutoSaveAsyncCallback = getInitAutoSaveAsyncCallback();
+		getLatestScript = getLatestScriptAsyncCallback();
 		
+		menuFileNewCommand = getMenuFileNewCommand();
 		menuFileSaveCommand = getMenuFileSaveCommand();
 		menuFileInfoCommand = getMenuFileInfoCommand();
 		
@@ -130,8 +134,8 @@ public class Sgs2 implements EntryPoint {
 	
 	public void onModuleLoad() {
 		
-		// Getting a UUID from the server 
-		groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
+		// Get latest script
+		groovyShellService.getLatestScript(getLatestScript);
 				
 		// Setup Auto Save Timer
 		autoSaveTimer = getAutoSaveTimer();
@@ -148,6 +152,7 @@ public class Sgs2 implements EntryPoint {
 		
 		// File Menu items
 		MenuBar fileMenu = new MenuBar(true);
+		fileMenu.addItem("New", menuFileNewCommand);
 		fileMenu.addItem("Save", menuFileSaveCommand);
 		fileMenu.addItem("Info", menuFileInfoCommand);
 		
@@ -294,6 +299,15 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
+	private Command getMenuFileNewCommand() {
+		return new Command() {
+			public void execute() {
+				textArea.setText("");
+				groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
+			}
+		};
+	}
+	
 	private Command getMenuFileInfoCommand() {
 		return new Command() {
 			public void execute() {
@@ -324,6 +338,13 @@ public class Sgs2 implements EntryPoint {
 
 					}
 					public void onSuccess(AutoSaveResult result) {
+						
+						if(null != result.getResult() && !"".equals(result.getResult())) {
+							consoleFlowPanel.add(new HTML(result.getResult()));
+							status.setHTML("Error ocured during auto save ...");
+							resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+						}
+						
 						statusTimer = new Timer() {
 							@Override
 							public void run() {
@@ -337,16 +358,31 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
+	private AsyncCallback<LatestScriptResult> getLatestScriptAsyncCallback() {
+		return new AsyncCallback<LatestScriptResult> () {
+			public void onFailure(Throwable caught) {
+				consoleFlowPanel.add(new HTML("ERROR : Was not able to get latest script"));
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			}
+			public void onSuccess(LatestScriptResult result) {
+				if(null == result) {
+					groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
+				}
+				else {
+					autoSaveUuid = result.getScriptUuid();
+					textArea.setText(result.getScript());
+				}
+			}
+		};
+	}
+	
 	private AsyncCallback<String> getInitAutoSaveAsyncCallback() {
 		return new AsyncCallback<String>() {
-
 			public void onFailure(Throwable caught) {
 				status.setHTML("Auto Saving Error: init");
 			}
-
 			public void onSuccess(String result) {
 				autoSaveUuid = result;
-				GWT.log("initAutoSave uuid = " + result, null);
 			}
 		};
 	}
@@ -354,7 +390,8 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptParseResult> getParseAsyncCallback() {
 		return new AsyncCallback<ScriptParseResult>() {
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
+				consoleFlowPanel.add(new HTML("ERROR : Was not able to parse the source code"));
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(ScriptParseResult result) {
 				String stackTrace = result.getStackTrace();

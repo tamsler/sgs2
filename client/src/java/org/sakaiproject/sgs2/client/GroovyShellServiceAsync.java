@@ -29,4 +29,6 @@ public interface GroovyShellServiceAsync {
 	void autoSave(String uuid, String sourceCode, AsyncCallback<AutoSaveResult> callback);
 	
 	void initAutoSave(AsyncCallback<String> callback);
+	
+	void getLatestScript(AsyncCallback<LatestScriptResult> callback);
 }

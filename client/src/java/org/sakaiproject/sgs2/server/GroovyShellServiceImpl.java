@@ -33,10 +33,12 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.sgs2.client.AutoSaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.LatestScriptResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.user.api.UserDirectoryService;
+import org.sakaiproject.user.api.UserNotDefinedException;
 
 public class GroovyShellServiceImpl extends GWTSpringController implements GroovyShellService {
 
@@ -72,9 +74,20 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		// Persisting script information
 		Script script = new Script();
+		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		try {
+			script.setUserId(userDirectoryService.getUserId(userEid));
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			script.setUserId(userEid);
+		}
 		script.setScript(sourceCode);
-		script.setUserEid(userDirectoryService.getCurrentUser().getEid());
-		script.setExecutionDate(new Date());
+		script.setOutput((null == output || "".equals(output)) ? null : output.toString());
+		script.setResult((null == result || "".equals(result)) ? null : result.toString());
+		script.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
+		script.setActionType(ActionType.SCRIPT_EXECUTION.name);
+		script.setActionDate(new Date());
 		
 		try {
 			
@@ -88,9 +101,9 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		// Sending result back to the client
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput(output.toString());
-		scriptExecutionResult.setResult((null == result) ? null : result.toString());
-		scriptExecutionResult.setStackTrace(stackTrace.toString());
+		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : output.toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : result.toString());
+		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
 		
 		return scriptExecutionResult;
 	}
@@ -124,19 +137,84 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		LOG.info("Auto Save uuid = " + uuid);
 		
-		// FIXME : Add DB persistence
+		// Persisting script information
+		Script script = new Script();
+		script.setId(new Long(uuid));
+		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		try {
+			script.setUserId(userDirectoryService.getUserId(userEid));
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			script.setUserId(userEid);
+		}
+		script.setScript(sourceCode);
+		script.setActionType(ActionType.AUTO_SAVE.name);
+		script.setActionDate(new Date());
+
 		AutoSaveResult autoSaveResult = new AutoSaveResult();
-		autoSaveResult.setResult(uuid);
+		autoSaveResult.setResult("");
+		
+		try {
+
+			groovyShellManager.update(script);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			autoSaveResult.setResult(e.getMessage());
+			LOG.error("Was not able to save script object");
+		}
+
 		return autoSaveResult;
 	}
 	
 	public String initAutoSave() {
-				
-		String uuid = UUID.randomUUID().toString();
+		
+		Script script = new Script();
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		try {
+			script.setUserId(userDirectoryService.getUserId(userEid));
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			script.setUserId(userEid);
+		}
+		script.setScript("");
+		script.setActionType(ActionType.AUTO_SAVE.name);
+		script.setActionDate(new Date());
+		
+		Long sequence = groovyShellManager.save(script);
+		
+		String uuid = sequence.toString();
 		
 		LOG.info("Init Auto Save : uuid = " + uuid);
 		
 		return uuid;
+	}
+	
+	public LatestScriptResult getLatestScript() {
+		
+		Script script = null;
+		LatestScriptResult latestScriptResult = new LatestScriptResult();
+		
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		String userId = null;
+		try {
+			userId = userDirectoryService.getUserId(userEid);
+			script = groovyShellManager.getLatestScript(userId);
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			script = groovyShellManager.getLatestScript(userEid);
+		}
+		
+		if(null == script) {
+			return null;
+		}
+		else {
+			
+			latestScriptResult.setScriptUuid(script.getId().toString());
+			latestScriptResult.setScript(script.getScript());
+			return latestScriptResult;
+		}
 	}
 	
 	// DI
