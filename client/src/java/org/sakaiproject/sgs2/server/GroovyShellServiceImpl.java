@@ -31,11 +31,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
-import org.sakaiproject.sgs2.client.AutoSaveResult;
+import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
@@ -133,7 +134,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return scriptParseResult;
 	}
 	
-	public AutoSaveResult autoSave(String uuid, String sourceCode) {
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType) {
 		
 		LOG.info("Auto Save uuid = " + uuid);
 		
@@ -149,10 +150,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script.setUserId(userEid);
 		}
 		script.setScript(sourceCode);
-		script.setActionType(ActionType.AUTO_SAVE.name);
+		script.setActionType(actionType.name);
 		script.setActionDate(new Date());
 
-		AutoSaveResult autoSaveResult = new AutoSaveResult();
+		SaveResult autoSaveResult = new SaveResult();
 		autoSaveResult.setResult("");
 		
 		try {

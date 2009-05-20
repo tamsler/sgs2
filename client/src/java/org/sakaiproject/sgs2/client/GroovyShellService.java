@@ -27,7 +27,7 @@ public interface GroovyShellService extends RemoteService {
 	enum ActionType { AUTO_SAVE("auto_save"), USER_SAVE("user_save"), SCRIPT_EXECUTION("script_execution");
 	
 		public String name;
-		
+				
 		ActionType(String name) {
 			this.name = name;
 		}
@@ -37,7 +37,7 @@ public interface GroovyShellService extends RemoteService {
 	
 	public ScriptParseResult parse(String sourceCode);
 	
-	public AutoSaveResult autoSave(String uuid, String sourceCode);
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType);
 	
 	public String initAutoSave();
 	

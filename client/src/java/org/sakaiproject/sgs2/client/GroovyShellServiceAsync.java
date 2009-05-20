@@ -18,6 +18,8 @@
 
 package org.sakaiproject.sgs2.client;
 
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GroovyShellServiceAsync {
@@ -26,7 +28,7 @@ public interface GroovyShellServiceAsync {
 	
 	void parse(String sourceCode, AsyncCallback<ScriptParseResult> callback);
 	
-	void autoSave(String uuid, String sourceCode, AsyncCallback<AutoSaveResult> callback);
+	void save(String uuid, String name, String sourceCode, ActionType actionType, AsyncCallback<SaveResult> callback);
 	
 	void initAutoSave(AsyncCallback<String> callback);
 	

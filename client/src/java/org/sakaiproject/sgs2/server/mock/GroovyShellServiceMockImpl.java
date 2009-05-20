@@ -33,11 +33,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.sakaiproject.sgs2.client.AutoSaveResult;
+import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.server.GroovyShellServiceImpl;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -108,10 +109,10 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 	
 	// Mock Impl
-	public AutoSaveResult autoSave(String uuid, String sourceCode) {
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType) {
 
 		autoSaveMap.put(uuid, sourceCode);
-		AutoSaveResult autoSaveResult = new AutoSaveResult();
+		SaveResult autoSaveResult = new SaveResult();
 		autoSaveResult.setResult("");
 		LOG.info("AutoSave: uuid = " + uuid + " : sourceCode = " + sourceCode);
 		return autoSaveResult;

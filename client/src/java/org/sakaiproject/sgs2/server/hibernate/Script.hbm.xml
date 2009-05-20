@@ -17,6 +17,9 @@
 		<property name="script" type="text" not-null="false">
             <column name="SCRIPT"/>
         </property>
+        <property name="name" type="string" length="255" not-null="false">
+            <column name="SCRIPT_NAME"/>
+        </property>
         <property name="output" type="text" not-null="false">
             <column name="OUTPUT"/>
         </property>

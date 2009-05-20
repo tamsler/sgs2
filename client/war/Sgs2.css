@@ -12,6 +12,14 @@ h1 {
 }
 
 .gwt-HTML {
-  border: 1px solid #ACA899;
+  #border-bottom: 1px solid #ACA899;
   padding: 5px;
+}
+
+.gwt-DialogBox {
+  width: 400px;
+}
+
+.dialogVPanel {
+  margin: 5px;
 }

@@ -28,6 +28,7 @@ public class Script implements Serializable {
 	private Long id;
 	private String userId;
 	private String script;
+	private String name;
 	private String output;
 	private String result;
 	private String stackTrace;
@@ -48,6 +49,14 @@ public class Script implements Serializable {
 
 	public void setScript(String script) {
 		this.script = script;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getUserId() {

@@ -20,6 +20,9 @@ package org.sakaiproject.sgs2.client;
 
 import java.util.Date;
 
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
+import org.sakaiproject.sgs2.client.ui.widget.Sgs2DialogBox;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
@@ -92,6 +95,9 @@ public class Sgs2 implements EntryPoint {
 	// 5 seconds
 	private int autoSaveStatusChange = 5000;
 	
+	// I18N
+	I18nConstants i18n = null;
+	
 	// Callbacks
 	private AsyncCallback<ScriptExecutionResult> submitAsyncCallback = null;
 	private AsyncCallback<ScriptParseResult> parseAsyncCallback = null;
@@ -118,6 +124,8 @@ public class Sgs2 implements EntryPoint {
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
 		
 		configureSakaiParentIframe();
+		
+		i18n = GWT.create(I18nConstants.class);
 		
 		submitAsyncCallback = getSubmitAsyncCallback();
 		parseAsyncCallback = getParseAsyncCallback();
@@ -279,7 +287,6 @@ public class Sgs2 implements EntryPoint {
 	private ClickHandler getParseClickHandler() {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
-
 				String sourceCode = textArea.getText();
 				groovyShellService.parse(sourceCode, parseAsyncCallback);
 			}
@@ -288,11 +295,8 @@ public class Sgs2 implements EntryPoint {
 	
 	private ClickHandler getSubmitClickHandler() {
 		return new ClickHandler() {
-			
 			public void onClick(ClickEvent event) {
-				
 				beforeSubmit();
-				
 				String sourceCode = textArea.getText();
 				groovyShellService.submit(sourceCode, submitAsyncCallback);
 			}
@@ -311,8 +315,18 @@ public class Sgs2 implements EntryPoint {
 	private Command getMenuFileInfoCommand() {
 		return new Command() {
 			public void execute() {
-				// TODO
-				Window.alert("You selected the Info menu item!");
+				final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
+				dialogBox.setTitle(i18n.dialogText());
+				dialogBox.setButtonText(i18n.dialogCloseButton());
+				dialogBox.addContent(new HTML(i18n.dialogInfoTitle()));
+				dialogBox.addContent(new HTML(i18n.dialogInfoContent()));
+				dialogBox.addButtonClickHandler(new ClickHandler() {
+					public void onClick(ClickEvent event) {
+						dialogBox.hide();
+					}
+				});
+				dialogBox.center();
+				dialogBox.show();
 			}
 		};
 	}
@@ -320,8 +334,12 @@ public class Sgs2 implements EntryPoint {
 	private Command getMenuFileSaveCommand() {
 		return new Command() {
 			public void execute() {
-				// TODO
-				Window.alert("You selected the Save menu item!");
+				final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
+				dialogBox.setTitle(i18n.dialogText());
+				dialogBox.setButtonText(i18n.dialogCloseButton());
+				dialogBox.addContent(new HTML("<b>Not implemented yet</b>"));
+				dialogBox.center();
+				dialogBox.show();
 			}
 		};
 	}
@@ -332,12 +350,11 @@ public class Sgs2 implements EntryPoint {
 			@Override
 			public void run() {
 				status.setHTML("Auto Saving ...");
-				groovyShellService.autoSave(autoSaveUuid, textArea.getText(), new AsyncCallback<AutoSaveResult>() {
+				groovyShellService.save(autoSaveUuid, null, textArea.getText(), ActionType.AUTO_SAVE, new AsyncCallback<SaveResult>() {
 					public void onFailure(Throwable caught) {
 						status.setHTML("Auto Saving Error: Server");
-
 					}
-					public void onSuccess(AutoSaveResult result) {
+					public void onSuccess(SaveResult result) {
 						
 						if(null != result.getResult() && !"".equals(result.getResult())) {
 							consoleFlowPanel.add(new HTML(result.getResult()));
