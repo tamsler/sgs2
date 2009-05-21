@@ -41,10 +41,12 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 
@@ -67,6 +69,8 @@ public class Sgs2 implements EntryPoint {
 	private GroovyShellServiceAsync groovyShellService = GWT.create(GroovyShellService.class);
 
 	// UI
+	private Label scriptLabel = null;
+	private Label scriptName = null;
 	private TextArea textArea = null; 
 	private Button submitButton = null;
 	private Button parseButton = null;
@@ -82,6 +86,7 @@ public class Sgs2 implements EntryPoint {
 	private HorizontalPanel menuAndStatusPanel = null;
 	private VerticalPanel statusPanel = null;
 	private HorizontalPanel buttonPanel = null;
+	private HorizontalPanel scriptNamePanel = null;
 
 	private TabPanel resultTabPanel = null;
 	
@@ -147,8 +152,12 @@ public class Sgs2 implements EntryPoint {
 		menuAndStatusPanel = new HorizontalPanel();
 		buttonPanel = new HorizontalPanel();
 		statusPanel = new VerticalPanel();
+		scriptNamePanel = new HorizontalPanel();
 		
 		status = new HTML("");
+		
+		scriptLabel = new Label("Name:");
+		scriptName = new Label("");
 		
 		textArea = new TextArea();
 		
@@ -244,6 +253,11 @@ public class Sgs2 implements EntryPoint {
 		
 		// Adding widgets to vertical panel
 		inputVerticalPanel.add(menuAndStatusPanel);
+		scriptNamePanel.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
+		scriptNamePanel.setSpacing(3);
+		scriptNamePanel.add(scriptLabel);
+		scriptNamePanel.add(scriptName);
+		inputVerticalPanel.add(scriptNamePanel);
 		inputVerticalPanel.add(textArea);
 		inputVerticalPanel.add(buttonPanel);
 		mainVerticalPanel.add(inputVerticalPanel);
@@ -312,6 +326,7 @@ public class Sgs2 implements EntryPoint {
 		return new Command() {
 			public void execute() {
 				textArea.setText("");
+				scriptName.setText("");
 				groovyShellService.initAutoSave(getSecureToken(), initAutoSaveAsyncCallback);
 			}
 		};
@@ -342,8 +357,24 @@ public class Sgs2 implements EntryPoint {
 			public void execute() {
 				final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
 				dialogBox.setTitle(i18n.dialogText());
-				dialogBox.setButtonText(i18n.dialogCloseButton());
-				dialogBox.addContent(new HTML("<b>Not implemented yet</b>"));
+				dialogBox.setButtonText(i18n.dialogCancelButton());
+				HorizontalPanel horizontalPanel = new HorizontalPanel();
+				horizontalPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
+				horizontalPanel.setSpacing(3);
+				horizontalPanel.add(new Label(i18n.dialogSaveName()));
+				final TextBox textBox = new TextBox();
+				horizontalPanel.add(textBox);
+				dialogBox.addContent(horizontalPanel);
+				dialogBox.addButton(i18n.dialogSaveButton(), new ClickHandler() {
+					public void onClick(ClickEvent event) {
+						String name = textBox.getText();
+						if(null != name && !"".equals(name)) {
+							groovyShellService.save(autoSaveUuid, name, textArea.getText(), ActionType.USER_SAVE, getSecureToken(), saveAsyncCallback);
+							dialogBox.hide();
+						}
+					}
+				});
+				
 				dialogBox.center();
 				dialogBox.show();
 			}
@@ -356,7 +387,7 @@ public class Sgs2 implements EntryPoint {
 			@Override
 			public void run() {
 				status.setHTML("Auto Saving ...");
-				groovyShellService.save(autoSaveUuid, null, textArea.getText(), ActionType.AUTO_SAVE, getSecureToken(), saveAsyncCallback);
+				groovyShellService.save(autoSaveUuid, scriptName.getText(), textArea.getText(), ActionType.AUTO_SAVE, getSecureToken(), saveAsyncCallback);
 			}
 		};
 	}
@@ -372,19 +403,47 @@ public class Sgs2 implements EntryPoint {
 				
 				checkResult(result, null);
 				
-				if(null != result.getResult() && !"".equals(result.getResult())) {
-					consoleFlowPanel.add(new HTML(result.getResult()));
-					status.setHTML("Error ocured during auto save ...");
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				switch(result.getActionType()) {
+					
+					case AUTO_SAVE:
+						
+						if(null != result.getError() && !"".equals(result.getError())) {
+							consoleFlowPanel.add(new HTML(result.getError()));
+							status.setHTML("Error ocured during auto save ...");
+							resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+						}
+						
+						statusTimer = new Timer() {
+							@Override
+							public void run() {
+								status.setHTML("");
+							}
+						};
+						
+						statusTimer.schedule(autoSaveStatusChange);
+						
+						break;
+					
+					case USER_SAVE:
+						
+						if(null != result.getError() && !"".equals(result.getError())) {
+							consoleFlowPanel.add(new HTML(result.getError()));
+							status.setHTML("Error ocured during save ...");
+							resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+						}
+						else {
+							consoleFlowPanel.add(new HTML("INFO: Source code has been saved"));
+							resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+							scriptName.setText(result.getName());
+						}
+						
+						break;
+					
+					default:
+						consoleFlowPanel.add(new HTML("ERROR: Save action wasn't of type user or auto save"));
+						resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+						break;
 				}
-				
-				statusTimer = new Timer() {
-					@Override
-					public void run() {
-						status.setHTML("");
-					}
-				};
-				statusTimer.schedule(autoSaveStatusChange);
 			}
 		};
 	}
@@ -406,6 +465,7 @@ public class Sgs2 implements EntryPoint {
 				else {
 					autoSaveUuid = result.getScriptUuid();
 					textArea.setText(result.getScript());
+					scriptName.setText((null == result.getName()) ? "?" : result.getName() );
 				}
 			}
 		};

@@ -169,9 +169,11 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		script.setScript(sourceCode);
 		script.setActionType(actionType.name);
 		script.setActionDate(new Date());
+		script.setName(name);
 
 		SaveResult autoSaveResult = new SaveResult();
-		autoSaveResult.setResult("");
+		autoSaveResult.setActionType(actionType);
+		autoSaveResult.setName(name);
 		
 		try {
 
@@ -179,7 +181,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			autoSaveResult.setResult(e.getMessage());
+			autoSaveResult.setError(e.getMessage());
 			LOG.error("Was not able to save script object");
 		}
 
@@ -243,6 +245,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			latestScriptResult.setHasScript(Boolean.TRUE);
 			latestScriptResult.setScriptUuid(script.getId().toString());
 			latestScriptResult.setScript(script.getScript());
+			latestScriptResult.setName(script.getName());
 		}
 		
 		return latestScriptResult;

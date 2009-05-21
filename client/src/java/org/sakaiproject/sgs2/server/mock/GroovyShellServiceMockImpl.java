@@ -49,6 +49,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	private static final Log LOG = LogFactory.getLog(GroovyShellServiceImpl.class);
 
+	// FIXME : need to be able to store script name as well
 	private Map<String, String> autoSaveMap = new HashMap<String, String>();
 
 	// Mock Impl
@@ -110,18 +111,26 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	
 	// Mock Impl
 	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
-
-		autoSaveMap.put(uuid, sourceCode);
+		
 		SaveResult autoSaveResult = new SaveResult();
-		autoSaveResult.setResult("");
-		LOG.info("AutoSave: uuid = " + uuid + " : sourceCode = " + sourceCode);
+		try {
+			autoSaveMap.put(uuid, sourceCode);
+		}
+		catch(Exception e) {
+			autoSaveResult.setError(e.getMessage());
+		}
+		
+		autoSaveResult.setName(name);
+		autoSaveResult.setActionType(actionType);
 		return autoSaveResult;
 	}
 	
 	// Mock Impl
 	public InitAutoSaveResult initAutoSave(String secureToken) {
 		InitAutoSaveResult initAutoSaveResult = new InitAutoSaveResult();
-		initAutoSaveResult.setScriptUuid(UUID.randomUUID().toString());
+		String uuid = UUID.randomUUID().toString();
+		initAutoSaveResult.setScriptUuid(uuid);
+		autoSaveMap.put(uuid, "");
 		return initAutoSaveResult;
 	}
 
@@ -138,6 +147,8 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			
 			latestScriptResult.setHasScript(Boolean.TRUE);
 			Set<String> uuids = autoSaveMap.keySet();
+			
+			// FIXME : need to store script name as well
 			
 			for(String uuid : uuids) {
 				latestScriptResult.setScriptUuid(uuid);

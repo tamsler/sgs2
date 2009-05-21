@@ -27,6 +27,7 @@ public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 	private String scriptUuid;
 	private String script;
 	private Boolean hasScript;
+	private String name;
 
 	public String getScriptUuid() {
 		return scriptUuid;
@@ -50,5 +51,13 @@ public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 
 	public void setHasScript(Boolean hasScript) {
 		this.hasScript = hasScript;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

@@ -88,4 +88,10 @@ public class Sgs2DialogBox extends DialogBox {
 		handlerRegistration.removeHandler();
 		handlerRegistration = button.addClickHandler(clickHandler);
 	}
+	
+	public void addButton(String label, ClickHandler clickHandler) {
+		Button newButton = new Button(label);
+		newButton.addClickHandler(clickHandler);
+		horizontalPanel.add(newButton);
+	}
 }
