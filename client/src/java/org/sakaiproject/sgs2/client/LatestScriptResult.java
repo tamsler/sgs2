@@ -20,12 +20,13 @@ package org.sakaiproject.sgs2.client;
 
 import java.io.Serializable;
 
-public class LatestScriptResult implements Serializable {
+public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private String scriptUuid;
 	private String script;
+	private Boolean hasScript;
 
 	public String getScriptUuid() {
 		return scriptUuid;
@@ -41,5 +42,13 @@ public class LatestScriptResult implements Serializable {
 
 	public void setScript(String script) {
 		this.script = script;
+	}
+
+	public Boolean getHasScript() {
+		return hasScript;
+	}
+
+	public void setHasScript(Boolean hasScript) {
+		this.hasScript = hasScript;
 	}
 }

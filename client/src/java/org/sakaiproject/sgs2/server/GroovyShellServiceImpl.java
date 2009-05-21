@@ -24,20 +24,22 @@ import groovy.lang.GroovyShell;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
-import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
-import org.sakaiproject.sgs2.client.SaveResult;
+import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.InitAutoSaveResult;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
+import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
-import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.client.model.Script;
+import org.sakaiproject.tool.api.Session;
+import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
 
@@ -47,9 +49,16 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 
 	private static final long serialVersionUID = 1L;
 	private UserDirectoryService userDirectoryService;
+	private SessionManager sessionManager;
+	private SecurityService securityService;
 	private GroovyShellManager groovyShellManager;
 	
-	public ScriptExecutionResult submit(String sourceCode) {
+	// API Impl
+	public ScriptExecutionResult submit(String sourceCode, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
@@ -109,7 +118,12 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return scriptExecutionResult;
 	}
 	
-	public ScriptParseResult parse(String sourceCode) {
+	// API Impl
+	public ScriptParseResult parse(String sourceCode, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
 		
 		StringWriter stackTrace = new StringWriter();
 		
@@ -134,9 +148,12 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return scriptParseResult;
 	}
 	
-	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType) {
+	// API Impl
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
 		
-		LOG.info("Auto Save uuid = " + uuid);
+		if(!isSecure(secureToken)) {
+			return null;
+		}
 		
 		// Persisting script information
 		Script script = new Script();
@@ -169,8 +186,14 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return autoSaveResult;
 	}
 	
-	public String initAutoSave() {
+	// API Impl
+	public InitAutoSaveResult initAutoSave(String secureToken) {
 		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
+		
+		// Create Script object for query
 		Script script = new Script();
 		String userEid = userDirectoryService.getCurrentUser().getEid();
 		try {
@@ -183,16 +206,22 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		script.setActionType(ActionType.AUTO_SAVE.name);
 		script.setActionDate(new Date());
 		
+		// Query
 		Long sequence = groovyShellManager.save(script);
 		
-		String uuid = sequence.toString();
+		// Setup RPC result
+		InitAutoSaveResult initAutoSaveResult = new InitAutoSaveResult();
+		initAutoSaveResult.setScriptUuid(sequence.toString());
 		
-		LOG.info("Init Auto Save : uuid = " + uuid);
-		
-		return uuid;
+		return initAutoSaveResult;
 	}
 	
-	public LatestScriptResult getLatestScript() {
+	// API Impl
+	public LatestScriptResult getLatestScript(String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
 		
 		Script script = null;
 		LatestScriptResult latestScriptResult = new LatestScriptResult();
@@ -208,14 +237,51 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		}
 		
 		if(null == script) {
-			return null;
+			latestScriptResult.setHasScript(Boolean.FALSE);
 		}
 		else {
-			
+			latestScriptResult.setHasScript(Boolean.TRUE);
 			latestScriptResult.setScriptUuid(script.getId().toString());
 			latestScriptResult.setScript(script.getScript());
-			return latestScriptResult;
 		}
+		
+		return latestScriptResult;
+	}
+
+	/* 
+	 * First, we check if both the client and server session match
+	 * Second, we check if current user is the admin user
+	 */
+	private boolean isSecure(String clientSecureToken) {
+
+		String serverSecureToken  = "";
+		
+		if((null != sessionManager) && (null != securityService)) {
+			
+			Session session = sessionManager.getCurrentSession();
+			
+			if(null != session) {
+				
+				serverSecureToken = session.getId();
+				
+				// Check if the client and server secure tokens match
+				// The client's secure token has more characters so we only test for startsWith
+				if(clientSecureToken.startsWith(serverSecureToken)) {
+					
+					// Check that current user has admin privileges
+					if(securityService.isSuperUser()) {
+
+						return true;
+					}
+				}
+			}
+		}
+		
+		LOG.error("# MSG 1: The client provided secure token is not valid and or user is not a super user");
+		LOG.error("# MSG 2: Client Secure Token = " + clientSecureToken);
+		LOG.error("# MSG 3: Server Secure Token = " + serverSecureToken);
+		
+		return false;
 	}
 	
 	// DI
@@ -226,5 +292,15 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	// DI
 	public void setGroovyShellManager(GroovyShellManager groovyShellManager) {
 		this.groovyShellManager = groovyShellManager;
+	}
+	
+	// DI
+	public void setSessionManager(SessionManager sessionManager) {
+		this.sessionManager = sessionManager;
+	}
+	
+	// DI
+	public void setSecurityService(SecurityService securityService) {
+		this.securityService = securityService;
 	}
 }

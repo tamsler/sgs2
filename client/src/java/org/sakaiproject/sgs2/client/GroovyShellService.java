@@ -33,13 +33,13 @@ public interface GroovyShellService extends RemoteService {
 		}
 	}
 
-	public ScriptExecutionResult submit(String sourceCode);
+	public ScriptExecutionResult submit(String sourceCode, String secureToken);
 	
-	public ScriptParseResult parse(String sourceCode);
+	public ScriptParseResult parse(String sourceCode, String secureToken);
 	
-	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType);
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken);
 	
-	public String initAutoSave();
+	public InitAutoSaveResult initAutoSave(String secureToken);
 	
-	public LatestScriptResult getLatestScript();
+	public LatestScriptResult getLatestScript(String secureToken);
 }
