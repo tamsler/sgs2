@@ -20,7 +20,7 @@ package org.sakaiproject.sgs2.client;
 
 import java.io.Serializable;
 
-public class ScriptParseResult implements Serializable {
+public class ScriptParseResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	

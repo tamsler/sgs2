@@ -32,8 +32,8 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
@@ -63,7 +63,7 @@ public class Sgs2 implements EntryPoint {
 		}
 	}
 	
-	// GWT RPC proxy
+	// GWT RPC Proxy
 	private GroovyShellServiceAsync groovyShellService = GWT.create(GroovyShellService.class);
 
 	// UI
@@ -101,8 +101,9 @@ public class Sgs2 implements EntryPoint {
 	// Callbacks
 	private AsyncCallback<ScriptExecutionResult> submitAsyncCallback = null;
 	private AsyncCallback<ScriptParseResult> parseAsyncCallback = null;
-	private AsyncCallback<String> initAutoSaveAsyncCallback = null;
+	private AsyncCallback<InitAutoSaveResult> initAutoSaveAsyncCallback = null;
 	private AsyncCallback<LatestScriptResult> getLatestScript = null;
+	private AsyncCallback<SaveResult> saveAsyncCallback = null;
 	
 	// Commands
 	private Command menuFileNewCommand = null;
@@ -123,6 +124,7 @@ public class Sgs2 implements EntryPoint {
 		// This is a reference for the declared servlet in Sgs2.gwt.xml
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
 		
+		// Fix Sakai parent iFrame height
 		configureSakaiParentIframe();
 		
 		i18n = GWT.create(I18nConstants.class);
@@ -131,6 +133,7 @@ public class Sgs2 implements EntryPoint {
 		parseAsyncCallback = getParseAsyncCallback();
 		initAutoSaveAsyncCallback = getInitAutoSaveAsyncCallback();
 		getLatestScript = getLatestScriptAsyncCallback();
+		saveAsyncCallback = getSaveAsyncCallback();
 		
 		menuFileNewCommand = getMenuFileNewCommand();
 		menuFileSaveCommand = getMenuFileSaveCommand();
@@ -138,25 +141,37 @@ public class Sgs2 implements EntryPoint {
 		
 		submitClickHandler = getSubmitClickHandler();
 		parseClickHandler = getParseClickHandler();
-	}
-	
-	public void onModuleLoad() {
 		
-		// Get latest script
-		groovyShellService.getLatestScript(getLatestScript);
-				
-		// Setup Auto Save Timer
-		autoSaveTimer = getAutoSaveTimer();
-		autoSaveTimer.scheduleRepeating(autoSaveInterval);
-		
-		// Layouts and Widges
 		mainVerticalPanel = new VerticalPanel();
 		inputVerticalPanel = new VerticalPanel();
 		menuAndStatusPanel = new HorizontalPanel();
 		buttonPanel = new HorizontalPanel();
 		statusPanel = new VerticalPanel();
+		
 		status = new HTML("");
-		statusPanel.add(status);
+		
+		textArea = new TextArea();
+		
+		submitButton = new Button("Submit");
+		parseButton = new Button("Parse");
+		
+		resultTabPanel = new TabPanel();
+		
+		outputFlowPanel = new FlowPanel();
+		resultFlowPanel = new FlowPanel();
+		stackTraceFlowPanel = new FlowPanel();
+		historyFlowPanel = new FlowPanel();
+		consoleFlowPanel = new FlowPanel();
+	}
+	
+	public void onModuleLoad() {
+		
+		// Get latest script
+		groovyShellService.getLatestScript(getSecureToken(), getLatestScript);
+				
+		// Setup Auto Save Timer
+		autoSaveTimer = getAutoSaveTimer();
+		autoSaveTimer.scheduleRepeating(autoSaveInterval);
 		
 		// File Menu items
 		MenuBar fileMenu = new MenuBar(true);
@@ -170,13 +185,13 @@ public class Sgs2 implements EntryPoint {
 		analyzeMenu.addItem("Hello World", new Command() {
 			public void execute() {
 				beforeSubmit();
-				groovyShellService.submit("println 'Hello World'", submitAsyncCallback);
+				groovyShellService.submit("println 'Hello World'", getSecureToken(), submitAsyncCallback);
 			}
 		});
 		analyzeMenu.addItem("4 + 4", new Command() {
 			public void execute() {
 				beforeSubmit();
-				groovyShellService.submit("4 + 4", submitAsyncCallback);
+				groovyShellService.submit("4 + 4", getSecureToken(), submitAsyncCallback);
 			}
 		});
 		
@@ -184,19 +199,9 @@ public class Sgs2 implements EntryPoint {
 		MenuBar menu = new MenuBar();
 	    menu.addItem("File", fileMenu);
 	    menu.addItem("Analyze", analyzeMenu);
-
-		textArea = new TextArea();
 		
-		submitButton = new Button("Submit");
-		parseButton = new Button("Parse");
-		
-		resultTabPanel = new TabPanel();
-		
-		outputFlowPanel = new FlowPanel();
-		resultFlowPanel = new FlowPanel();
-		stackTraceFlowPanel = new FlowPanel();
-		historyFlowPanel = new FlowPanel();
-		consoleFlowPanel = new FlowPanel();
+		// Attach and configure widgets
+		statusPanel.add(status);
 		
 		resultTabPanel.add(outputFlowPanel, "Output");
 		resultTabPanel.add(resultFlowPanel, "Result");
@@ -288,7 +293,7 @@ public class Sgs2 implements EntryPoint {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				String sourceCode = textArea.getText();
-				groovyShellService.parse(sourceCode, parseAsyncCallback);
+				groovyShellService.parse(sourceCode, getSecureToken(), parseAsyncCallback);
 			}
 		};
 	}
@@ -298,7 +303,7 @@ public class Sgs2 implements EntryPoint {
 			public void onClick(ClickEvent event) {
 				beforeSubmit();
 				String sourceCode = textArea.getText();
-				groovyShellService.submit(sourceCode, submitAsyncCallback);
+				groovyShellService.submit(sourceCode, getSecureToken(), submitAsyncCallback);
 			}
 		};
 	}
@@ -307,7 +312,7 @@ public class Sgs2 implements EntryPoint {
 		return new Command() {
 			public void execute() {
 				textArea.setText("");
-				groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
+				groovyShellService.initAutoSave(getSecureToken(), initAutoSaveAsyncCallback);
 			}
 		};
 	}
@@ -350,27 +355,35 @@ public class Sgs2 implements EntryPoint {
 			@Override
 			public void run() {
 				status.setHTML("Auto Saving ...");
-				groovyShellService.save(autoSaveUuid, null, textArea.getText(), ActionType.AUTO_SAVE, new AsyncCallback<SaveResult>() {
-					public void onFailure(Throwable caught) {
-						status.setHTML("Auto Saving Error: Server");
+				groovyShellService.save(autoSaveUuid, null, textArea.getText(), ActionType.AUTO_SAVE, getSecureToken(), saveAsyncCallback);
+			}
+		};
+	}
+	
+	private AsyncCallback<SaveResult> getSaveAsyncCallback() {
+		
+		return new AsyncCallback<SaveResult>() {
+			public void onFailure(Throwable caught) {
+				consoleFlowPanel.add(new HTML("GWT RPC ERROR: save(...)"));
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			}
+			public void onSuccess(SaveResult result) {
+				
+				checkResult(result, null);
+				
+				if(null != result.getResult() && !"".equals(result.getResult())) {
+					consoleFlowPanel.add(new HTML(result.getResult()));
+					status.setHTML("Error ocured during auto save ...");
+					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				}
+				
+				statusTimer = new Timer() {
+					@Override
+					public void run() {
+						status.setHTML("");
 					}
-					public void onSuccess(SaveResult result) {
-						
-						if(null != result.getResult() && !"".equals(result.getResult())) {
-							consoleFlowPanel.add(new HTML(result.getResult()));
-							status.setHTML("Error ocured during auto save ...");
-							resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-						}
-						
-						statusTimer = new Timer() {
-							@Override
-							public void run() {
-								status.setHTML("");
-							}
-						};
-						statusTimer.schedule(autoSaveStatusChange);
-					}
-				});
+				};
+				statusTimer.schedule(autoSaveStatusChange);
 			}
 		};
 	}
@@ -378,12 +391,16 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<LatestScriptResult> getLatestScriptAsyncCallback() {
 		return new AsyncCallback<LatestScriptResult> () {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("ERROR : Was not able to get latest script"));
+				consoleFlowPanel.add(new HTML("GWT RPC ERROR: getLatestScript(...)"));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(LatestScriptResult result) {
-				if(null == result) {
-					groovyShellService.initAutoSave(initAutoSaveAsyncCallback);
+				
+				checkResult(result, null);
+				
+				// In case there is NO previous script that this user has created, we start a new one
+				if(!result.getHasScript()) {
+					groovyShellService.initAutoSave(getSecureToken(), initAutoSaveAsyncCallback);
 				}
 				else {
 					autoSaveUuid = result.getScriptUuid();
@@ -393,13 +410,23 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
-	private AsyncCallback<String> getInitAutoSaveAsyncCallback() {
-		return new AsyncCallback<String>() {
+	private AsyncCallback<InitAutoSaveResult> getInitAutoSaveAsyncCallback() {
+		return new AsyncCallback<InitAutoSaveResult>() {
 			public void onFailure(Throwable caught) {
-				status.setHTML("Auto Saving Error: init");
+				consoleFlowPanel.add(new HTML("GWT RPC ERROR: initAutoSave(...)"));
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
-			public void onSuccess(String result) {
-				autoSaveUuid = result;
+			public void onSuccess(InitAutoSaveResult result) {
+				
+				checkResult(result, null);
+				
+				autoSaveUuid = result.getScriptUuid();
+				
+				if(null == autoSaveUuid || "".equals(autoSaveUuid)) {
+					
+					consoleFlowPanel.add(new HTML("ERROR: initAutoSaveAsyncCallback() : autoSaveUuid is null or the empty string"));
+					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				}
 			}
 		};
 	}
@@ -407,10 +434,13 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptParseResult> getParseAsyncCallback() {
 		return new AsyncCallback<ScriptParseResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("ERROR : Was not able to parse the source code"));
+				consoleFlowPanel.add(new HTML("GWT RPC ERROR: parse(...)"));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(ScriptParseResult result) {
+
+				checkResult(result, null);
+				
 				String stackTrace = result.getStackTrace();
 				if(null == stackTrace || "".equals(stackTrace)) {
 					consoleFlowPanel.add(new HTML("PARSE Result: OK"));
@@ -426,14 +456,19 @@ public class Sgs2 implements EntryPoint {
 	
 	private AsyncCallback<ScriptExecutionResult> getSubmitAsyncCallback() {
 		return new AsyncCallback<ScriptExecutionResult>() {
-
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
+				consoleFlowPanel.add(new HTML("GWT RPC ERROR: submit(...)"));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				submitButton.setEnabled(true);
 			}
 
 			public void onSuccess(ScriptExecutionResult result) {
+				
+				checkResult(result, new ErrorAction() {
+					public void run() {
+						submitButton.setEnabled(true);
+					}
+				});
 				
 				// History
 				historyFlowPanel.insert(new HTML("STACK TRACE: " + result.getStackTrace()), 0);
@@ -470,6 +505,23 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
+	protected void checkResult(AsyncCallbackResult asyncCallbackResult, ErrorAction errorAction) {
+		
+		if(null == asyncCallbackResult) {
+			consoleFlowPanel.add(new HTML("ERROR: Server encountere a security issue : " + new Date().toString()));
+			resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			
+			if(null != errorAction) {
+				errorAction.run();
+			}
+			
+			return;
+		}
+	}
+	
+	private String getSecureToken() {
+		return Cookies.getCookie("JSESSIONID");
+	}
 	
 	// JSNI
 	private native Document getWindowParentDocument() /*-{

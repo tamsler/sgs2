@@ -24,13 +24,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GroovyShellServiceAsync {
 	
-	void submit(String sourceCode, AsyncCallback<ScriptExecutionResult> callback);
+	void submit(String sourceCode, String secureToken, AsyncCallback<ScriptExecutionResult> callback);
 	
-	void parse(String sourceCode, AsyncCallback<ScriptParseResult> callback);
+	void parse(String sourceCode, String secureToken, AsyncCallback<ScriptParseResult> callback);
 	
-	void save(String uuid, String name, String sourceCode, ActionType actionType, AsyncCallback<SaveResult> callback);
+	void save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken, AsyncCallback<SaveResult> callback);
 	
-	void initAutoSave(AsyncCallback<String> callback);
+	void initAutoSave(String secureToken, AsyncCallback<InitAutoSaveResult> callback);
 	
-	void getLatestScript(AsyncCallback<LatestScriptResult> callback);
+	void getLatestScript(String secureToken, AsyncCallback<LatestScriptResult> callback);
 }

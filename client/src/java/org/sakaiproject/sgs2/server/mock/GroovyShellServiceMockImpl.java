@@ -33,12 +33,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
+import org.sakaiproject.sgs2.client.InitAutoSaveResult;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
+import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
-import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.server.GroovyShellServiceImpl;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -52,7 +52,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	private Map<String, String> autoSaveMap = new HashMap<String, String>();
 
 	// Mock Impl
-	public ScriptExecutionResult submit(String sourceCode) {
+	public ScriptExecutionResult submit(String sourceCode, String secureToken) {
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
@@ -83,7 +83,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 	
 	// Mock Impl
-	public ScriptParseResult parse(String sourceCode) {
+	public ScriptParseResult parse(String sourceCode, String secureToken) {
 			
 		StringWriter stackTrace = new StringWriter();
 		
@@ -109,7 +109,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 	
 	// Mock Impl
-	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType) {
+	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
 
 		autoSaveMap.put(uuid, sourceCode);
 		SaveResult autoSaveResult = new SaveResult();
@@ -119,19 +119,24 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 	
 	// Mock Impl
-	public String initAutoSave() {
-		return UUID.randomUUID().toString();
+	public InitAutoSaveResult initAutoSave(String secureToken) {
+		InitAutoSaveResult initAutoSaveResult = new InitAutoSaveResult();
+		initAutoSaveResult.setScriptUuid(UUID.randomUUID().toString());
+		return initAutoSaveResult;
 	}
 
-	public LatestScriptResult getLatestScript() {
+	public LatestScriptResult getLatestScript(String secureToken) {
 		// TODO : the autoSaveMap should store a script object with user data and time stamp
+		
+		LatestScriptResult latestScriptResult = new LatestScriptResult();
+		
 		if(autoSaveMap.size() == 0) {
 			
-			return null;
+			latestScriptResult.setHasScript(Boolean.FALSE);
 		}
 		else {
 			
-			LatestScriptResult latestScriptResult = new LatestScriptResult();
+			latestScriptResult.setHasScript(Boolean.TRUE);
 			Set<String> uuids = autoSaveMap.keySet();
 			
 			for(String uuid : uuids) {
@@ -139,8 +144,8 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 				latestScriptResult.setScript(autoSaveMap.get(uuid));
 				break;
 			}
-			
-			return latestScriptResult;
 		}
+		
+		return latestScriptResult;
 	}
 }
