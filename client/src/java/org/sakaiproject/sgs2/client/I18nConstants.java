@@ -7,5 +7,6 @@ public interface I18nConstants extends Constants {
 	String dialogText();
 	String dialogCloseButton();
 	String dialogInfoTitle();
-	String dialogInfoContent();
+	String dialogInfoContentAuthor();
+	String dialogInfoContentUrl();
 }

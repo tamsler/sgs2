@@ -324,7 +324,8 @@ public class Sgs2 implements EntryPoint {
 				dialogBox.setTitle(i18n.dialogText());
 				dialogBox.setButtonText(i18n.dialogCloseButton());
 				dialogBox.addContent(new HTML(i18n.dialogInfoTitle()));
-				dialogBox.addContent(new HTML(i18n.dialogInfoContent()));
+				dialogBox.addContent(new HTML(i18n.dialogInfoContentAuthor()));
+				dialogBox.addContent(new HTML(i18n.dialogInfoContentUrl()));
 				dialogBox.addButtonClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						dialogBox.hide();
