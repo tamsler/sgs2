@@ -22,6 +22,10 @@
 			<id>gwt-maven</id>
 			<url>http://gwt-maven.googlecode.com/svn/trunk/mavenrepo/</url>
 		</repository>
+		<repository>
+			<id>UCD</id>
+			<url>http://maven2.ucdavis.edu/maven2/</url>
+		</repository>
 	</repositories>
 <!--  convenience to define GWT version in one place -->
 	<properties>
@@ -82,11 +86,11 @@
             <version>5.5.23</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-        	<groupId>org.gwtwidgets</groupId>
-            <artifactId>gwt-sl</artifactId>
-            <version>0.1.5b</version>
-        </dependency>
+		<dependency>
+    		<groupId>net.sf.gwt-widget</groupId>
+    		<artifactId>gwt-sl</artifactId>
+    		<version>0.1.5b</version>
+		</dependency> 
         <dependency>
       		<groupId>org.springframework</groupId>
       		<artifactId>spring</artifactId>
