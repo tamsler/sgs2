@@ -4,12 +4,7 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-
-  <!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>Sgs2.html</welcome-file>
-  </welcome-file-list>
-  
+ 
   <!-- Servlets -->
   <servlet>
     <servlet-name>sgs2.rpc.sgs2</servlet-name>
@@ -20,5 +15,10 @@
     <servlet-name>sgs2.rpc.sgs2</servlet-name>
     <url-pattern>/sgs2/rpc/sgs2</url-pattern>
   </servlet-mapping>
+  
+  <!-- Default page to serve -->
+  <welcome-file-list>
+    <welcome-file>Sgs2.html</welcome-file>
+  </welcome-file-list>
 
 </web-app>

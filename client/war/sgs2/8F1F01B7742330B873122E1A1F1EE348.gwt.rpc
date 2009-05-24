@@ -5,7 +5,10 @@ java.lang.RuntimeException, false
 java.lang.String, true
 java.lang.Throwable, false
 org.sakaiproject.sgs2.client.GroovyShellService$ActionType, true
+org.sakaiproject.sgs2.client.InitAutoSaveResult, true
 org.sakaiproject.sgs2.client.LatestScriptResult, true
+org.sakaiproject.sgs2.client.MarkAsFavoriteResult, true
 org.sakaiproject.sgs2.client.SaveResult, true
 org.sakaiproject.sgs2.client.ScriptExecutionResult, true
 org.sakaiproject.sgs2.client.ScriptParseResult, true
+org.sakaiproject.sgs2.client.ScriptResult, true

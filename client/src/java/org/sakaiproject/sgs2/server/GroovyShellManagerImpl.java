@@ -24,6 +24,7 @@ import java.util.List;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
@@ -55,7 +56,26 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 		.addOrder(Order.desc("actionDate"));
 		List<Script> scripts = getHibernateTemplate().findByCriteria(d);
 		
-		if(!scripts.isEmpty()) {
+		if(null != scripts && !scripts.isEmpty()) {
+			
+			return scripts.get(0);
+		}
+		else {
+			return null;
+		}
+	}
+
+	public Script getScript(String uuid) {
+		return (Script) getHibernateTemplate().get(Script.class, new Long(uuid));
+	}
+
+	public Script getScript(String userId, String name) {
+		DetachedCriteria d = DetachedCriteria.forClass(Script.class)
+		.add(Restrictions.eq("name", name))
+		.add(Restrictions.eq("userId", userId));
+		List<Script> scripts = getHibernateTemplate().findByCriteria(d);
+		
+		if(null != scripts && scripts.size() == 1) {
 			
 			return scripts.get(0);
 		}

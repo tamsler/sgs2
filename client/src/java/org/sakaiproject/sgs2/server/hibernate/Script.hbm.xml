@@ -35,7 +35,9 @@
         <property name="actionDate" type="timestamp" not-null="true">
             <column name="ACTION_DATE"/>
         </property>
-        
+        <property name="favorite" type="boolean" not-null="false">
+        	<column name="IS_FAVORITE"></column>
+        </property>
 	</class>
 	
 </hibernate-mapping>

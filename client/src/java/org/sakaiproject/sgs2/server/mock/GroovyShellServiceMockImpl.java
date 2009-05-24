@@ -20,7 +20,6 @@ package org.sakaiproject.sgs2.server.mock;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import groovy.lang.Script;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -36,10 +35,12 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.InitAutoSaveResult;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
+import org.sakaiproject.sgs2.client.MarkAsFavoriteResult;
 import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
-import org.sakaiproject.sgs2.server.GroovyShellServiceImpl;
+import org.sakaiproject.sgs2.client.ScriptResult;
+import org.sakaiproject.sgs2.server.mock.Script;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -47,10 +48,11 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Log LOG = LogFactory.getLog(GroovyShellServiceImpl.class);
+	private static final Log LOG = LogFactory.getLog(GroovyShellServiceMockImpl.class);
 
-	// FIXME : need to be able to store script name as well
-	private Map<String, String> autoSaveMap = new HashMap<String, String>();
+	private Map<String, Script> autoSaveMap = new HashMap<String, Script>();
+	
+	private Script latestScriptRef = null;
 
 	// Mock Impl
 	public ScriptExecutionResult submit(String sourceCode, String secureToken) {
@@ -88,7 +90,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			
 		StringWriter stackTrace = new StringWriter();
 		
-		Script script = null;
+		groovy.lang.Script script = null;
 		
 		try {
 			
@@ -110,53 +112,159 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 	
 	// Mock Impl
-	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
+	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) {
 		
 		SaveResult autoSaveResult = new SaveResult();
+		Script script = null;
+		
+		if(autoSaveMap.containsKey(uuid)) {
+			script = autoSaveMap.get(uuid);
+		}
+		else {
+			System.out.println("ERROR: Trying to save a script that doesn't exists yet.");
+			script = new Script();
+		}
+		
+		script.setScript(sourceCode);
+		script.setActionType(actionType.name);
+		
+		latestScriptRef = script;
+		
 		try {
-			autoSaveMap.put(uuid, sourceCode);
+			// In case it's a new script otherwise we don't have to do this
+			autoSaveMap.put(uuid, script);
 		}
 		catch(Exception e) {
 			autoSaveResult.setError(e.getMessage());
 		}
 		
-		autoSaveResult.setName(name);
 		autoSaveResult.setActionType(actionType);
 		return autoSaveResult;
 	}
 	
 	// Mock Impl
 	public InitAutoSaveResult initAutoSave(String secureToken) {
-		InitAutoSaveResult initAutoSaveResult = new InitAutoSaveResult();
+		
+		InitAutoSaveResult initAutoSaveResult = null;
+		try {
+		
+		initAutoSaveResult = new InitAutoSaveResult();
+		
 		String uuid = UUID.randomUUID().toString();
 		initAutoSaveResult.setScriptUuid(uuid);
-		autoSaveMap.put(uuid, "");
+		
+		Script script = new Script();
+		latestScriptRef = script;
+		script.setId(uuid);
+		autoSaveMap.put(uuid, script);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return initAutoSaveResult;
 	}
 
 	public LatestScriptResult getLatestScript(String secureToken) {
-		// TODO : the autoSaveMap should store a script object with user data and time stamp
 		
 		LatestScriptResult latestScriptResult = new LatestScriptResult();
-		
-		if(autoSaveMap.size() == 0) {
-			
+
+		if(null == latestScriptRef) {
 			latestScriptResult.setHasScript(Boolean.FALSE);
+			
 		}
 		else {
 			
+			latestScriptResult.setName(latestScriptRef.getName());
 			latestScriptResult.setHasScript(Boolean.TRUE);
-			Set<String> uuids = autoSaveMap.keySet();
-			
-			// FIXME : need to store script name as well
-			
-			for(String uuid : uuids) {
-				latestScriptResult.setScriptUuid(uuid);
-				latestScriptResult.setScript(autoSaveMap.get(uuid));
-				break;
-			}
+			latestScriptResult.setScript(latestScriptRef.getScript());
+			latestScriptResult.setScriptUuid(latestScriptRef.getId().toString());
 		}
 		
 		return latestScriptResult;
+	}
+
+	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) {
+
+		MarkAsFavoriteResult markAsFavoriteResult = new MarkAsFavoriteResult();
+		if(autoSaveMap.containsKey(uuid)) {
+			
+			 Script script = autoSaveMap.get(uuid);
+			 script.setFavorite(Boolean.TRUE);
+			 markAsFavoriteResult.setName(script.getName());
+		}
+		else {
+			markAsFavoriteResult.setError("Script does not exist");
+		}
+		
+		return markAsFavoriteResult;
+	}
+
+	public ScriptResult getScript(String name, String secureToken) {
+		
+		ScriptResult scriptResult = new ScriptResult();
+		scriptResult.setName(name);
+
+		Set<String> uuids = autoSaveMap.keySet();
+
+		for(String uuid : uuids) {
+			Script script = autoSaveMap.get(uuid);
+			if(script.getName().equals(name)) {
+				scriptResult.setScript(script.getScript());
+				return scriptResult;
+			}
+		}
+
+
+		scriptResult.setError("Wasn't abel to fine script with name = " + name);
+
+		return scriptResult;
+	}
+
+	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) {
+		
+		SaveResult saveResult = new SaveResult();
+		
+		if(autoSaveMap.containsKey(uuid)) {
+			Script script = autoSaveMap.get(uuid);
+			script.setScript(sourceCode);
+			script.setActionType(actionType.name);
+			saveResult.setName(script.getName());
+			latestScriptRef = script;
+		}
+		else {
+			
+		}
+		
+		saveResult.setActionType(actionType.AUTO_SAVE);
+		return saveResult;
+	}
+
+	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
+		
+		SaveResult saveResult = new SaveResult();
+		saveResult.setActionType(actionType);
+		saveResult.setName(name);
+		
+		Set<String> uuids = autoSaveMap.keySet();
+		for(String key : uuids) {
+			Script script = autoSaveMap.get(key);
+			if(name.equals(script.getName())) {
+				saveResult.setNameExists(Boolean.TRUE);
+				return saveResult;
+			}
+		}
+		
+		if(autoSaveMap.containsKey(uuid)) {
+			Script script = autoSaveMap.get(uuid);
+			script.setName(name);
+			script.setScript(sourceCode);
+			script.setActionType(actionType.name);
+			latestScriptRef = script;
+		}
+		else {
+			saveResult.setError("Script does not exists");
+		}
+		saveResult.setNameExists(Boolean.FALSE);
+		return saveResult;
 	}
 }

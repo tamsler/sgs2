@@ -16,7 +16,7 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client.model;
+package org.sakaiproject.sgs2.server.mock;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -25,7 +25,7 @@ public class Script implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Long id;
+	private String id;
 	private String userId;
 	private String script;
 	private String name;
@@ -36,11 +36,11 @@ public class Script implements Serializable {
 	private Date actionDate;
 	private Boolean favorite;
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

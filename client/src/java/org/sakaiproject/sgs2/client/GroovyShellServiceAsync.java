@@ -28,9 +28,17 @@ public interface GroovyShellServiceAsync {
 	
 	void parse(String sourceCode, String secureToken, AsyncCallback<ScriptParseResult> callback);
 	
-	void save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken, AsyncCallback<SaveResult> callback);
+	void save(String uuid, String sourceCode, ActionType actionType, String secureToken, AsyncCallback<SaveResult> callback);
 	
+	void autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken, AsyncCallback<SaveResult> callback);
+	
+	void saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken, AsyncCallback<SaveResult> callback);
+		
 	void initAutoSave(String secureToken, AsyncCallback<InitAutoSaveResult> callback);
 	
 	void getLatestScript(String secureToken, AsyncCallback<LatestScriptResult> callback);
+	
+	void markAsFavorite(String uuid, String name, String secureToken, AsyncCallback<MarkAsFavoriteResult> callback);
+	
+	void getScript(String name, String secureToken, AsyncCallback<ScriptResult> callback);
 }

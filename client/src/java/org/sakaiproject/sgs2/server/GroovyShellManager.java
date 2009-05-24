@@ -29,5 +29,7 @@ public interface GroovyShellManager {
 	public void delete(Script script);
 	public Collection<Script> getScripts(String userId);
 	public Script getLatestScript(String userId);
+	public Script getScript(String uuid);
+	public Script getScript(String userId, String name);
 
 }

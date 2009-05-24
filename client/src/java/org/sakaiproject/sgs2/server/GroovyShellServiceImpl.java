@@ -34,9 +34,11 @@ import org.sakaiproject.authz.api.SecurityService;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.InitAutoSaveResult;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
+import org.sakaiproject.sgs2.client.MarkAsFavoriteResult;
 import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
+import org.sakaiproject.sgs2.client.ScriptResult;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
@@ -149,43 +151,9 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public SaveResult save(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
-		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
-		
-		// Persisting script information
-		Script script = new Script();
-		script.setId(new Long(uuid));
-		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
-		String userEid = userDirectoryService.getCurrentUser().getEid();
-		try {
-			script.setUserId(userDirectoryService.getUserId(userEid));
-		} catch (UserNotDefinedException e1) {
-			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
-			script.setUserId(userEid);
-		}
-		script.setScript(sourceCode);
-		script.setActionType(actionType.name);
-		script.setActionDate(new Date());
-		script.setName(name);
-
-		SaveResult autoSaveResult = new SaveResult();
-		autoSaveResult.setActionType(actionType);
-		autoSaveResult.setName(name);
-		
-		try {
-
-			groovyShellManager.update(script);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			autoSaveResult.setError(e.getMessage());
-			LOG.error("Was not able to save script object");
-		}
-
-		return autoSaveResult;
+	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) {
+	
+		return autoSave(uuid, sourceCode, actionType, secureToken);
 	}
 	
 	// API Impl
@@ -251,6 +219,210 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		return latestScriptResult;
 	}
 
+	// API Impl
+	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
+		
+		MarkAsFavoriteResult markAsFavoriteResult = new MarkAsFavoriteResult();
+		markAsFavoriteResult.setName(name);
+		
+		Script script = null;
+		
+		try {
+			script = groovyShellManager.getScript(uuid);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			markAsFavoriteResult.setError(e.getMessage());
+			return markAsFavoriteResult;
+		}
+		
+		script.setFavorite(Boolean.TRUE);
+		
+		try {
+			groovyShellManager.update(script);
+		}
+		catch(Exception e) {
+			LOG.error("Was not able to mark script as favorite");
+			markAsFavoriteResult.setError(e.getMessage());
+			e.printStackTrace();
+		}
+		
+		return markAsFavoriteResult;
+	}
+	
+	// API Impl
+	public ScriptResult getScript(String name, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
+		
+		ScriptResult scriptResult = new ScriptResult();
+		scriptResult.setName(name);
+		
+		Script script = null;
+		
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		String userId = null;
+		try {
+			
+			userId = userDirectoryService.getUserId(userEid);
+			
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			userId = userEid;
+		}
+		
+		try {
+			
+			script = groovyShellManager.getScript(userId, name);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			scriptResult.setError(e.getMessage());
+		}
+		
+		if(null != script) {
+			scriptResult.setScript(script.getScript());
+		}
+		
+		return scriptResult;
+	}
+	
+	// API Impl
+	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
+	
+		SaveResult saveResult = new SaveResult();
+		saveResult.setActionType(actionType);
+		
+		// get script
+		Script script = null;
+		
+		try {
+			script = groovyShellManager.getScript(uuid);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			saveResult.setError(e.getMessage());
+			return saveResult;
+		}
+		
+		if(null == script) {
+			saveResult.setError("ERROR: Was not able to get script with uuid = " + uuid);
+			return saveResult;
+		}
+		
+		// update script arguments
+		script.setId(new Long(uuid));
+		script.setScript(sourceCode);
+		script.setActionType(actionType.name);
+		script.setActionDate(new Date());
+		
+		// update
+		try {
+
+			groovyShellManager.update(script);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			saveResult.setError(e.getMessage());
+			LOG.error("Was not able to auto save script object : uuid = " + uuid);
+		}
+		
+		return saveResult;
+	}
+
+	// API Impl
+	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
+		
+		if(!isSecure(secureToken)) {
+			return null;
+		}
+	
+		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
+		String userId = null;
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		
+		try {
+			userId = userDirectoryService.getUserId(userEid);
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			userId = userEid;
+		}
+		
+		SaveResult saveResult = new SaveResult();
+		saveResult.setActionType(actionType);
+		Script script = null;
+
+		// check if file name exists
+		try {
+			
+			script = groovyShellManager.getScript(userId, name);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			saveResult.setError(e.getMessage());
+			return saveResult;
+		}
+		
+		if(null != script) {
+			saveResult.setNameExists(Boolean.TRUE);
+			return saveResult;
+		}
+		else {
+			saveResult.setNameExists(Boolean.FALSE);
+		}
+		
+		// get script with uuid
+		try {
+			script = groovyShellManager.getScript(uuid);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			saveResult.setError(e.getMessage());
+			return saveResult;
+		}
+		
+		if(null == script) {
+			saveResult.setError("ERROR: was not able to get script with uuid = " + uuid);
+			return saveResult;
+		}
+		
+		
+		// set script arguments
+		script.setId(new Long(uuid));
+		script.setUserId(userId);
+		script.setScript(sourceCode);
+		script.setActionType(actionType.name);
+		script.setActionDate(new Date());
+		script.setName(name);
+		
+		// update save result
+		saveResult.setName(name);
+		
+		// update/save script
+		try {
+
+			groovyShellManager.update(script);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			saveResult.setError(e.getMessage());
+			LOG.error("Was not able to save script object");
+		}
+		
+		return saveResult;
+	}
+	
+	// Helper Methods
 	/* 
 	 * First, we check if both the client and server session match
 	 * Second, we check if current user is the admin user

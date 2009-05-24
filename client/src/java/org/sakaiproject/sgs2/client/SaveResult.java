@@ -29,6 +29,7 @@ public class SaveResult implements AsyncCallbackResult, Serializable {
 	private String name;
 	private String error;
 	private ActionType actionType;
+	private Boolean nameExists;
 
 	public String getName() {
 		return name;
@@ -52,5 +53,13 @@ public class SaveResult implements AsyncCallbackResult, Serializable {
 
 	public void setError(String error) {
 		this.error = error;
+	}
+
+	public Boolean getNameExists() {
+		return nameExists;
+	}
+
+	public void setNameExists(Boolean nameExists) {
+		this.nameExists = nameExists;
 	}
 }
