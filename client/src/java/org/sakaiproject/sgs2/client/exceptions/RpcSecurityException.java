@@ -16,30 +16,27 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.exceptions;
 
 import java.io.Serializable;
 
-public class MarkAsFavoriteResult implements AsyncCallbackResult, Serializable {
-	
+public class RpcSecurityException extends Exception implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
-	String name;
-	String error;
 
-	public String getError() {
-		return error;
+	public RpcSecurityException() {
 	}
 
-	public void setError(String error) {
-		this.error = error;
+	public RpcSecurityException(String message) {
+		super(message);
 	}
 
-	public String getName() {
-		return name;
+	public RpcSecurityException(Throwable cause) {
+		super(cause);
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}	
+	public RpcSecurityException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

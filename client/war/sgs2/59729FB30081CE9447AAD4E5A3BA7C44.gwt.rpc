@@ -3,7 +3,18 @@ java.lang.Boolean, true
 java.lang.Exception, false
 java.lang.RuntimeException, false
 java.lang.String, true
+[Ljava.lang.String;, true
 java.lang.Throwable, false
+java.util.ArrayList, true
+java.util.Arrays$ArrayList, true
+java.util.HashSet, true
+java.util.LinkedHashSet, true
+java.util.LinkedList, true
+java.util.Stack, true
+java.util.TreeMap, true
+java.util.TreeSet, true
+java.util.Vector, true
+org.sakaiproject.sgs2.client.FavoriteResult, true
 org.sakaiproject.sgs2.client.GroovyShellService$ActionType, true
 org.sakaiproject.sgs2.client.InitAutoSaveResult, true
 org.sakaiproject.sgs2.client.LatestScriptResult, true
@@ -12,3 +23,4 @@ org.sakaiproject.sgs2.client.SaveResult, true
 org.sakaiproject.sgs2.client.ScriptExecutionResult, true
 org.sakaiproject.sgs2.client.ScriptParseResult, true
 org.sakaiproject.sgs2.client.ScriptResult, true
+org.sakaiproject.sgs2.client.exceptions.RpcSecurityException, true

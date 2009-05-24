@@ -20,6 +20,7 @@ package org.sakaiproject.sgs2.client;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
 
 @RemoteServiceRelativePath("shell")
 public interface GroovyShellService extends RemoteService {
@@ -33,21 +34,33 @@ public interface GroovyShellService extends RemoteService {
 		}
 	}
 
-	public ScriptExecutionResult submit(String sourceCode, String secureToken);
+	public ScriptExecutionResult run(String sourceCode, String secureToken)
+		throws RpcSecurityException;
 	
-	public ScriptParseResult parse(String sourceCode, String secureToken);
+	public ScriptParseResult parse(String sourceCode, String secureToken)
+		throws RpcSecurityException;
 	
-	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken);
+	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken)
+		throws RpcSecurityException;
 	
-	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken);
+	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken)
+		throws RpcSecurityException;
 	
-	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken);
+	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken)
+		throws RpcSecurityException;
 	
-	public InitAutoSaveResult initAutoSave(String secureToken);
+	public InitAutoSaveResult initAutoSave(String secureToken)
+		throws RpcSecurityException;
 	
-	public LatestScriptResult getLatestScript(String secureToken);
+	public LatestScriptResult getLatestScript(String secureToken)
+		throws RpcSecurityException;
 	
-	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken);
+	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken)
+		throws RpcSecurityException;
 	
-	public ScriptResult getScript(String name, String secureToken);
+	public ScriptResult getScript(String name, String secureToken)
+		throws RpcSecurityException;
+	
+	public FavoriteResult getFavorite(String secureToken)
+		throws RpcSecurityException;
 }

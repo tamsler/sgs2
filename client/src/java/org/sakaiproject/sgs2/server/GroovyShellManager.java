@@ -19,6 +19,7 @@
 package org.sakaiproject.sgs2.server;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.sakaiproject.sgs2.client.model.Script;
 
@@ -31,5 +32,6 @@ public interface GroovyShellManager {
 	public Script getLatestScript(String userId);
 	public Script getScript(String uuid);
 	public Script getScript(String userId, String name);
+	public List<String> getFavorite(String userId);
 
 }

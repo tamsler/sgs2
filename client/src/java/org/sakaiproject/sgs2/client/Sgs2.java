@@ -73,8 +73,9 @@ public class Sgs2 implements EntryPoint {
 	private Label scriptLabel = null;
 	private Label scriptName = null;
 	private TextArea textArea = null; 
-	private Button submitButton = null;
+	private Button runButton = null;
 	private Button parseButton = null;
+	private Button clearButton = null;
 	
 	private FlowPanel outputFlowPanel = null;
 	private FlowPanel resultFlowPanel = null;
@@ -140,8 +141,9 @@ public class Sgs2 implements EntryPoint {
 		
 		textArea = new TextArea();
 		
-		submitButton = new Button("Submit");
+		runButton = new Button("Run");
 		parseButton = new Button("Parse");
+		clearButton = new Button("Clear");
 		
 		resultTabPanel = new TabPanel();
 		
@@ -158,6 +160,9 @@ public class Sgs2 implements EntryPoint {
 	}
 	
 	public void onModuleLoad() {
+		
+		// Get favorite scripts
+		groovyShellService.getFavorite(getSecureToken(), getFavoriteAsyncCallback());
 		
 		// Get latest script
 		groovyShellService.getLatestScript(getSecureToken(), getLatestScriptAsyncCallback());
@@ -189,20 +194,7 @@ public class Sgs2 implements EntryPoint {
 			}
 		});
 		
-		// Scripts Menu items
-		scriptsMenu.addItem("Hello World", new Command() {
-			public void execute() {
-				beforeSubmit();
-				groovyShellService.submit("println 'Hello World'", getSecureToken(), getSubmitAsyncCallback());
-			}
-		});
-		scriptsMenu.addItem("4 + 4", new Command() {
-			public void execute() {
-				beforeSubmit();
-				groovyShellService.submit("4 + 4", getSecureToken(), getSubmitAsyncCallback());
-			}
-		});
-		
+		// Scripts Menu items		
 		scriptsMenu.addItem("Show Client Cookies", new Command() {
 			public void execute() {
 				Collection<String> cookyNames = Cookies.getCookieNames();
@@ -235,16 +227,16 @@ public class Sgs2 implements EntryPoint {
 		
 		resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
 		
-		submitButton.addClickHandler(getSubmitClickHandler());
+		runButton.addClickHandler(getRunClickHandler());
 		parseButton.addClickHandler(getParseClickHandler());
+		clearButton.addClickHandler(getClearClickHandler());
 
 		// Text Area Configuration
-		textArea.setCharacterWidth(80);
+		textArea.setWidth("100%");
 		textArea.setVisibleLines(25);
 		
 		// Tab Panel Configuration
 		resultTabPanel.setWidth("100%");
-		inputVerticalPanel.setWidth(Integer.toString(textArea.getOffsetHeight()) + "px");
 		
 		// Horizontal Menu And Status Panel
 		statusPanel.setWidth("200px");
@@ -261,9 +253,10 @@ public class Sgs2 implements EntryPoint {
 		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		buttonPanel.setWidth("100%");
 		buttonPanel.setSpacing(3);
+		buttonPanel.add(clearButton);
 		buttonPanel.add(parseButton);
-		buttonPanel.add(submitButton);
-		buttonPanel.setCellHorizontalAlignment(submitButton, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonPanel.add(runButton);
+		buttonPanel.setCellHorizontalAlignment(runButton, HasHorizontalAlignment.ALIGN_RIGHT);
 		buttonPanel.setCellHorizontalAlignment(parseButton, HasHorizontalAlignment.ALIGN_RIGHT);
 		
 		// Adding widgets to vertical panel
@@ -272,9 +265,11 @@ public class Sgs2 implements EntryPoint {
 		scriptNamePanel.setSpacing(3);
 		scriptNamePanel.add(scriptLabel);
 		scriptNamePanel.add(scriptName);
+		inputVerticalPanel.setWidth("100%");
 		inputVerticalPanel.add(scriptNamePanel);
 		inputVerticalPanel.add(textArea);
 		inputVerticalPanel.add(buttonPanel);
+		mainVerticalPanel.setWidth("100%");
 		mainVerticalPanel.add(inputVerticalPanel);
 		mainVerticalPanel.add(resultTabPanel);
 		
@@ -315,9 +310,17 @@ public class Sgs2 implements EntryPoint {
 		resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
 	}
 	
-	private void beforeSubmit() {	
-		submitButton.setEnabled(false);
+	private void beforeRun() {	
+		runButton.setEnabled(false);
 		resetPanels();
+	}
+	
+	private ClickHandler getClearClickHandler() {
+		return new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				textArea.setText("");
+			}
+		};
 	}
 	
 	private ClickHandler getParseClickHandler() {
@@ -329,12 +332,12 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
-	private ClickHandler getSubmitClickHandler() {
+	private ClickHandler getRunClickHandler() {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				beforeSubmit();
+				beforeRun();
 				String sourceCode = textArea.getText();
-				groovyShellService.submit(sourceCode, getSecureToken(), getSubmitAsyncCallback());
+				groovyShellService.run(sourceCode, getSecureToken(), getRunAsyncCallback());
 			}
 		};
 	}
@@ -374,9 +377,7 @@ public class Sgs2 implements EntryPoint {
 		return new Command() {
 			public void execute() {
 				groovyShellService.save(scriptUuid, textArea.getText(), ActionType.USER_SAVE, getSecureToken(), getSaveAsyncCallback());
-				
 			}
-			
 		};
 	}
 	
@@ -391,14 +392,25 @@ public class Sgs2 implements EntryPoint {
 				horizontalPanel.setSpacing(3);
 				horizontalPanel.add(new Label(i18n.dialogSaveName()));
 				final TextBox textBox = new TextBox();
+				textBox.setMaxLength(254);
 				horizontalPanel.add(textBox);
 				dialogBox.addContent(horizontalPanel);
 				dialogBox.addButton(i18n.dialogSaveButton(), new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						String name = textBox.getText();
-						if(null != name && !"".equals(name)) {
-							groovyShellService.saveAs(scriptUuid, name, textArea.getText(), ActionType.USER_SAVE_AS, getSecureToken(), getSaveAsAsyncCallback());
-							dialogBox.hide();
+						// Check input name legnth < 255
+						if(name.length() > 254) {
+							displayErrorDialog("Name length restriction : < 255 characters");
+						}
+						else {
+							if(null != name && !"".equals(name)) {
+								groovyShellService.saveAs(scriptUuid, name, textArea.getText(), ActionType.USER_SAVE_AS, getSecureToken(), getSaveAsAsyncCallback());
+								dialogBox.hide();
+							}
+							else {
+								consoleFlowPanel.add(new HTML("WARN: SaveAs : Selected name is either null or empty"));
+								resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+							}
 						}
 					}
 				});
@@ -420,10 +432,31 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
+	private AsyncCallback<FavoriteResult> getFavoriteAsyncCallback() {
+		return new AsyncCallback<FavoriteResult>() {
+			public void onFailure(Throwable caught) {
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			}
+			public void onSuccess(FavoriteResult result) {
+				
+				Collection<String> scriptNames = result.getFavorite();
+				for(final String scriptName : scriptNames) {
+					scriptsMenu.addItem(scriptName, new Command() {
+						public void execute() {
+							groovyShellService.getScript(scriptName, getSecureToken(), getScriptResultAsyncCallback());
+						}
+					});
+				}
+			}
+			
+		};
+	}
+	
 	private AsyncCallback<ScriptResult> getScriptResultAsyncCallback() {
 		return new AsyncCallback<ScriptResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: getScript(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(ScriptResult result) {
@@ -444,7 +477,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<MarkAsFavoriteResult> getMarkAsFavoriteAsyncCallback() {
 		return new AsyncCallback<MarkAsFavoriteResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: markAsFavorite(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(final MarkAsFavoriteResult result) {
@@ -468,7 +501,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<SaveResult> getSaveAsyncCallback() {
 		return new AsyncCallback<SaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: save(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(SaveResult result) {
@@ -498,7 +531,7 @@ public class Sgs2 implements EntryPoint {
 		return new AsyncCallback<SaveResult>() {
 
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: autoSave(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(SaveResult result) {
@@ -529,7 +562,7 @@ public class Sgs2 implements EntryPoint {
 
 		return new AsyncCallback<SaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: saveAs(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(SaveResult result) {
@@ -562,9 +595,8 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<LatestScriptResult> getLatestScriptAsyncCallback() {
 		return new AsyncCallback<LatestScriptResult> () {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: getLatestScript(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				stackTraceFlowPanel.add(new HTML(caught.getMessage()));
 			}
 			public void onSuccess(LatestScriptResult result) {
 				
@@ -586,9 +618,8 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<InitAutoSaveResult> getInitAutoSaveAsyncCallback() {
 		return new AsyncCallback<InitAutoSaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: initAutoSave(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				stackTraceFlowPanel.add(new HTML(caught.getMessage()));
 			}
 			public void onSuccess(InitAutoSaveResult result) {
 				
@@ -608,7 +639,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptParseResult> getParseAsyncCallback() {
 		return new AsyncCallback<ScriptParseResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: parse(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(ScriptParseResult result) {
@@ -628,19 +659,19 @@ public class Sgs2 implements EntryPoint {
 	}
 	
 	
-	private AsyncCallback<ScriptExecutionResult> getSubmitAsyncCallback() {
+	private AsyncCallback<ScriptExecutionResult> getRunAsyncCallback() {
 		return new AsyncCallback<ScriptExecutionResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML("GWT RPC ERROR: submit(...)"));
+				consoleFlowPanel.add(new HTML(caught.getMessage()));
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				submitButton.setEnabled(true);
+				runButton.setEnabled(true);
 			}
 
 			public void onSuccess(ScriptExecutionResult result) {
 				
 				checkResult(result, new ErrorAction() {
 					public void run() {
-						submitButton.setEnabled(true);
+						runButton.setEnabled(true);
 					}
 				});
 				
@@ -674,7 +705,7 @@ public class Sgs2 implements EntryPoint {
 				}
 				
 				// Enabling the button again
-				submitButton.setEnabled(true);
+				runButton.setEnabled(true);
 			}
 		};
 	}
@@ -691,6 +722,16 @@ public class Sgs2 implements EntryPoint {
 			
 			return;
 		}
+	}
+	
+	private void displayErrorDialog(String errorMessage) {
+		
+		final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
+		dialogBox.setTitle(i18n.dialogTextError());
+		dialogBox.setButtonText(i18n.dialogCloseButton());
+		dialogBox.addContent(new HTML(errorMessage));
+		dialogBox.center();
+		dialogBox.show();
 	}
 	
 	private String getSecureToken() {

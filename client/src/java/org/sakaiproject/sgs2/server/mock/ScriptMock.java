@@ -21,7 +21,7 @@ package org.sakaiproject.sgs2.server.mock;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Script implements Serializable {
+public class ScriptMock implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

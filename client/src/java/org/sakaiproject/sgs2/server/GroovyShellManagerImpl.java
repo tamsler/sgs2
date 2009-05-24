@@ -18,18 +18,27 @@
 
 package org.sakaiproject.sgs2.server;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.client.model.Script;
+import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 public class GroovyShellManagerImpl extends HibernateDaoSupport implements GroovyShellManager {
 
+	private static final Log LOG = LogFactory.getLog(GroovyShellManagerImpl.class);
+	
 	public Long save(Script script) {
 		return (Long) getHibernateTemplate().save(script);
 	}
@@ -43,6 +52,7 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 		getHibernateTemplate().delete(script);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Collection<Script> getScripts(String userId) {
 		DetachedCriteria d = DetachedCriteria.forClass(Script.class)
 		.add(Restrictions.eq("userId", userId))
@@ -50,6 +60,7 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 		return getHibernateTemplate().findByCriteria(d);
 	}
 
+	@SuppressWarnings("unchecked")
 	public Script getLatestScript(String userId) {
 		DetachedCriteria d = DetachedCriteria.forClass(Script.class)
 		.add(Restrictions.eq("userId", userId))
@@ -69,6 +80,7 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 		return (Script) getHibernateTemplate().get(Script.class, new Long(uuid));
 	}
 
+	@SuppressWarnings("unchecked")
 	public Script getScript(String userId, String name) {
 		DetachedCriteria d = DetachedCriteria.forClass(Script.class)
 		.add(Restrictions.eq("name", name))
@@ -81,6 +93,27 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 		}
 		else {
 			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<String> getFavorite(final String userId) {
+		
+		List<String> scriptNames =  (List<String>) getHibernateTemplate().execute(new HibernateCallback() {
+			
+            public Object doInHibernate(final Session session) throws HibernateException, SQLException {
+                final Query q = session.createQuery("select name from Script as S where S.userId = :userId and S.favorite = :favorite order by S.actionDate desc");
+                q.setString("userId", userId);
+                q.setBoolean("favorite", Boolean.TRUE);
+                return q.list();
+            }
+        });
+
+		if(null == scriptNames) {
+			return new ArrayList<String>();
+		}
+		else {
+			return scriptNames;
 		}
 	}
 }

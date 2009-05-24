@@ -19,13 +19,22 @@
 package org.sakaiproject.sgs2.client;
 
 import java.io.Serializable;
+import java.util.Collection;
 
-public class MarkAsFavoriteResult implements AsyncCallbackResult, Serializable {
-	
+public class FavoriteResult implements AsyncCallbackResult, Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
-	String name;
-	String error;
+
+	private Collection<String> favorite;
+	private String error;
+
+	public Collection<String> getFavorite() {
+		return favorite;
+	}
+
+	public void setFavorite(Collection<String> favorite) {
+		this.favorite = favorite;
+	}
 
 	public String getError() {
 		return error;
@@ -35,11 +44,4 @@ public class MarkAsFavoriteResult implements AsyncCallbackResult, Serializable {
 		this.error = error;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}	
 }

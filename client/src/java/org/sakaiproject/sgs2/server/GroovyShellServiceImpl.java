@@ -31,6 +31,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.authz.api.SecurityService;
+import org.sakaiproject.sgs2.client.FavoriteResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
 import org.sakaiproject.sgs2.client.InitAutoSaveResult;
 import org.sakaiproject.sgs2.client.LatestScriptResult;
@@ -39,8 +40,8 @@ import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.client.ScriptResult;
+import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
 import org.sakaiproject.sgs2.client.model.Script;
-import org.sakaiproject.tool.api.Session;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.user.api.UserDirectoryService;
 import org.sakaiproject.user.api.UserNotDefinedException;
@@ -56,11 +57,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	private GroovyShellManager groovyShellManager;
 	
 	// API Impl
-	public ScriptExecutionResult submit(String sourceCode, String secureToken) {
+	public ScriptExecutionResult run(String sourceCode, String secureToken)
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
@@ -121,11 +121,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public ScriptParseResult parse(String sourceCode, String secureToken) {
+	public ScriptParseResult parse(String sourceCode, String secureToken)
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		StringWriter stackTrace = new StringWriter();
 		
@@ -151,17 +150,19 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) {
-	
+	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) 
+		throws RpcSecurityException {
+		
+		isSecure(secureToken);
+		
 		return autoSave(uuid, sourceCode, actionType, secureToken);
 	}
 	
 	// API Impl
-	public InitAutoSaveResult initAutoSave(String secureToken) {
+	public InitAutoSaveResult initAutoSave(String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		// Create Script object for query
 		Script script = new Script();
@@ -187,11 +188,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public LatestScriptResult getLatestScript(String secureToken) {
+	public LatestScriptResult getLatestScript(String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		Script script = null;
 		LatestScriptResult latestScriptResult = new LatestScriptResult();
@@ -220,11 +220,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 
 	// API Impl
-	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) {
+	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		MarkAsFavoriteResult markAsFavoriteResult = new MarkAsFavoriteResult();
 		markAsFavoriteResult.setName(name);
@@ -255,11 +254,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public ScriptResult getScript(String name, String secureToken) {
+	public ScriptResult getScript(String name, String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 		
 		ScriptResult scriptResult = new ScriptResult();
 		scriptResult.setName(name);
@@ -294,11 +292,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 	
 	// API Impl
-	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) {
+	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 	
 		SaveResult saveResult = new SaveResult();
 		saveResult.setActionType(actionType);
@@ -341,11 +338,10 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	}
 
 	// API Impl
-	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) {
+	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) 
+		throws RpcSecurityException {
 		
-		if(!isSecure(secureToken)) {
-			return null;
-		}
+		isSecure(secureToken);
 	
 		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
 		String userId = null;
@@ -421,42 +417,57 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		return saveResult;
 	}
-	
+
+	// API Impl
+	public FavoriteResult getFavorite(String secureToken)
+		throws RpcSecurityException {
+		
+		isSecure(secureToken);
+		
+		FavoriteResult favoriteResult = new FavoriteResult();
+		
+		// Getting userEid. If we cannot find the userId from the userEid, we just log the userEid
+		String userId = null;
+		String userEid = userDirectoryService.getCurrentUser().getEid();
+		
+		try {
+			userId = userDirectoryService.getUserId(userEid);
+		} catch (UserNotDefinedException e1) {
+			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
+			userId = userEid;
+		}
+		
+		favoriteResult.setFavorite(groovyShellManager.getFavorite(userId));
+		
+		return favoriteResult;
+	}
+
 	// Helper Methods
 	/* 
 	 * First, we check if both the client and server session match
 	 * Second, we check if current user is the admin user
 	 */
-	private boolean isSecure(String clientSecureToken) {
-
-		String serverSecureToken  = "";
+	private void isSecure(String clientSecureToken) 
+		throws RpcSecurityException {
 		
-		if((null != sessionManager) && (null != securityService)) {
-			
-			Session session = sessionManager.getCurrentSession();
-			
-			if(null != session) {
-				
-				serverSecureToken = session.getId();
-				
-				// Check if the client and server secure tokens match
-				// The client's secure token has more characters so we only test for startsWith
-				if(clientSecureToken.startsWith(serverSecureToken)) {
-					
-					// Check that current user has admin privileges
-					if(securityService.isSuperUser()) {
-
-						return true;
-					}
-				}
-			}
+		if((null == sessionManager) || (null == securityService) || null == userDirectoryService) {
+			throw new RpcSecurityException("Security Exception: SGS2 RPC");
 		}
+			
+		String currentSessionId = sessionManager.getCurrentSession().getId();
+		String currentUserEid = userDirectoryService.getCurrentUser().getEid();
+		boolean isSuperUser = securityService.isSuperUser();
 		
-		LOG.error("# MSG 1: The client provided secure token is not valid and or user is not a super user");
-		LOG.error("# MSG 2: Client Secure Token = " + clientSecureToken);
-		LOG.error("# MSG 3: Server Secure Token = " + serverSecureToken);
-		
-		return false;
+		if(null == currentSessionId ||
+		   null == currentUserEid ||
+		   !isSuperUser ||
+		   "".equals(currentSessionId) ||
+		   "".equals(currentUserEid) ||
+		   !clientSecureToken.startsWith(currentSessionId)) {
+			
+			LOG.warn("SGS2: Security Exception: CST=" + clientSecureToken + " SST=" + currentSessionId);
+			throw new RpcSecurityException("Security Exception: SGS2 RPC");
+		}
 	}
 	
 	// DI
