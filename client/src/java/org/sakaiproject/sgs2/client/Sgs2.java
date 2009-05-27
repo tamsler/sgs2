@@ -493,6 +493,8 @@ public class Sgs2 implements EntryPoint {
 							groovyShellService.getScript(result.getName(), getSecureToken(), getScriptResultAsyncCallback());
 						}
 					});
+					
+					consoleFlowPanel.add(new HTML("Added script [" + result.getName() + "] to the Scripts menu"));
 				}
 			}
 		};
