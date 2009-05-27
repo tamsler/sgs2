@@ -40,6 +40,7 @@ import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.client.ScriptResult;
+import org.sakaiproject.sgs2.client.StopResult;
 import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.tool.api.SessionManager;
@@ -57,7 +58,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	private GroovyShellManager groovyShellManager;
 	
 	// API Impl
-	public ScriptExecutionResult run(String sourceCode, String secureToken)
+	public ScriptExecutionResult run(String uuid, String sourceCode, String secureToken)
 		throws RpcSecurityException {
 		
 		isSecure(secureToken);
@@ -438,8 +439,15 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		}
 		
 		favoriteResult.setFavorite(groovyShellManager.getFavorite(userId));
-		
+
 		return favoriteResult;
+	}
+
+	// API Impl
+	public StopResult stop(String uuid, String secureToken)
+		throws RpcSecurityException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	// Helper Methods

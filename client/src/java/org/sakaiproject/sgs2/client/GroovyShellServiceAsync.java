@@ -24,7 +24,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GroovyShellServiceAsync {
 	
-	void run(String sourceCode, String secureToken, AsyncCallback<ScriptExecutionResult> callback);
+	void run(String uuid, String sourceCode, String secureToken, AsyncCallback<ScriptExecutionResult> callback);
 	
 	void parse(String sourceCode, String secureToken, AsyncCallback<ScriptParseResult> callback);
 	
@@ -43,4 +43,6 @@ public interface GroovyShellServiceAsync {
 	void getScript(String name, String secureToken, AsyncCallback<ScriptResult> callback);
 	
 	void getFavorite(String SecureToken, AsyncCallback<FavoriteResult> callback);
+	
+	void stop(String uuid, String secureToken, AsyncCallback<StopResult> callback);
 }
