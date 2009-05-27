@@ -76,7 +76,6 @@ public class Sgs2 implements EntryPoint {
 	private Button runButton = null;
 	private Button parseButton = null;
 	private Button clearButton = null;
-	private Button stopButton = null;
 	
 	private FlowPanel outputFlowPanel = null;
 	private FlowPanel resultFlowPanel = null;
@@ -145,7 +144,6 @@ public class Sgs2 implements EntryPoint {
 		runButton = new Button("Run");
 		parseButton = new Button("Parse");
 		clearButton = new Button("Clear");
-		stopButton = new Button("Stop");
 		
 		resultTabPanel = new TabPanel();
 		
@@ -232,7 +230,6 @@ public class Sgs2 implements EntryPoint {
 		runButton.addClickHandler(getRunClickHandler());
 		parseButton.addClickHandler(getParseClickHandler());
 		clearButton.addClickHandler(getClearClickHandler());
-		stopButton.addClickHandler(getStopClickHandler());
 
 		// Text Area Configuration
 		textArea.setWidth("100%");
@@ -258,7 +255,6 @@ public class Sgs2 implements EntryPoint {
 		buttonPanel.setSpacing(3);
 		buttonPanel.add(clearButton);
 		buttonPanel.add(parseButton);
-		buttonPanel.add(stopButton);
 		buttonPanel.add(runButton);
 		buttonPanel.setCellHorizontalAlignment(runButton, HasHorizontalAlignment.ALIGN_RIGHT);
 		buttonPanel.setCellHorizontalAlignment(parseButton, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -319,15 +315,6 @@ public class Sgs2 implements EntryPoint {
 		resetPanels();
 	}
 	
-	private ClickHandler getStopClickHandler() {
-		return new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				
-				groovyShellService.stop(scriptUuid, getSecureToken(), getStopAsyncCallback());
-			}
-		};
-	}
-	
 	private ClickHandler getClearClickHandler() {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -350,7 +337,7 @@ public class Sgs2 implements EntryPoint {
 			public void onClick(ClickEvent event) {
 				beforeRun();
 				String sourceCode = textArea.getText();
-				groovyShellService.run(scriptUuid, sourceCode, getSecureToken(), getRunAsyncCallback());
+				groovyShellService.run(sourceCode, getSecureToken(), getRunAsyncCallback());
 			}
 		};
 	}
@@ -441,20 +428,6 @@ public class Sgs2 implements EntryPoint {
 			public void run() {
 				status.setHTML("Auto Saving ...");
 				groovyShellService.autoSave(scriptUuid, textArea.getText(), ActionType.AUTO_SAVE, getSecureToken(), getAutoSaveAsyncCallback());
-			}
-		};
-	}
-	
-	private AsyncCallback<StopResult> getStopAsyncCallback() {
-		return new AsyncCallback<StopResult>() {
-			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-			}
-
-			public void onSuccess(StopResult result) {
-				consoleFlowPanel.add(new HTML("Stopped script"));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 		};
 	}

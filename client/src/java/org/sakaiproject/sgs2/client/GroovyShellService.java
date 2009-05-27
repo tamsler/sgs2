@@ -34,7 +34,7 @@ public interface GroovyShellService extends RemoteService {
 		}
 	}
 
-	public ScriptExecutionResult run(String uuid, String sourceCode, String secureToken)
+	public ScriptExecutionResult run(String sourceCode, String secureToken)
 		throws RpcSecurityException;
 	
 	public ScriptParseResult parse(String sourceCode, String secureToken)
@@ -62,8 +62,5 @@ public interface GroovyShellService extends RemoteService {
 		throws RpcSecurityException;
 	
 	public FavoriteResult getFavorite(String secureToken)
-		throws RpcSecurityException;
-	
-	public StopResult stop(String uuid, String secureToken)
 		throws RpcSecurityException;
 }

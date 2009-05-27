@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,9 +43,8 @@ import org.sakaiproject.sgs2.client.SaveResult;
 import org.sakaiproject.sgs2.client.ScriptExecutionResult;
 import org.sakaiproject.sgs2.client.ScriptParseResult;
 import org.sakaiproject.sgs2.client.ScriptResult;
-import org.sakaiproject.sgs2.client.StopResult;
 import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
-import org.sakaiproject.sgs2.server.GroovyShellResult;
+import org.sakaiproject.sgs2.server.mock.ScriptMock;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -59,60 +57,36 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	private Map<String, ScriptMock> autoSaveMap = new HashMap<String, ScriptMock>();
 
 	private ScriptMock latestScriptRef = null;
-	
-	private Map<String, Thread> runMap = new ConcurrentHashMap<String, Thread>();
 
 	// Mock Impl
-	public ScriptExecutionResult run(String uuid, final String sourceCode, String secureToken) 
+	public ScriptExecutionResult run(String sourceCode, String secureToken) 
 		throws RpcSecurityException {
-		
-		final ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		
-		final StringWriter output = new StringWriter();
+
+		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
 		binding.setVariable("out", new PrintWriter(output));
-		final StringWriter stackTrace = new StringWriter();
-		final PrintWriter errorWriter = new PrintWriter(stackTrace);
-		final GroovyShellResult groovyShellResult = new GroovyShellResult();
+		StringWriter stackTrace = new StringWriter();
+		PrintWriter errorWriter = new PrintWriter(stackTrace);
+		Object result = null;
 
-		
-		final GroovyShell groovyShell = new GroovyShell(binding);
-		
-		Thread thread = new Thread() {
-			@Override
-			public void run() {
-				try {
-
-					groovyShellResult.setResult(groovyShell.evaluate(sourceCode));
-
-				} catch (MultipleCompilationErrorsException e) {
-
-					stackTrace.append(e.getMessage());
-
-				} catch (Throwable t) {
-
-					t.printStackTrace(errorWriter);
-				}
-			}
-			
-		};
-		
-		
-		runMap.put(uuid, thread);
-		
-		thread.setName(uuid);
-		thread.start();
 		try {
-			thread.join();
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+
+			result = new GroovyShell(binding).evaluate(sourceCode);
+
+		} catch (MultipleCompilationErrorsException e) {
+
+			stackTrace.append(e.getMessage());
+
+		} catch (Throwable t) {
+
+			t.printStackTrace(errorWriter);
 		}
-		
+
+		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
 		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : output.toString());
-		scriptExecutionResult.setResult((null == groovyShellResult.getResult() || "".equals(groovyShellResult.getResult())) ? null : groovyShellResult.getResult().toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : result.toString());
 		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
-		
+
 		return scriptExecutionResult;
 	}
 
@@ -327,27 +301,5 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 		favoriteResult.setFavorite(scriptNames);
 		
 		return favoriteResult;
-	}
-
-	public StopResult stop(String uuid, String secureToken) throws RpcSecurityException {
-	
-		StopResult stopResult = new StopResult();
-		try {
-		if(runMap.containsKey(uuid)) {
-			
-			Thread thread = runMap.get(uuid);
-			// FIXME: need to find a better way to do that
-			// but everything else I have tried so far won't "stop" the thread
-			thread.stop();
-
-		}
-		else {
-			LOG.error("Didn't find script execution resources for uuid = " + uuid);
-		}
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		return stopResult;
 	}
 }
