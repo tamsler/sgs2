@@ -20,9 +20,11 @@ package org.sakaiproject.sgs2.client;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 import org.sakaiproject.sgs2.client.ui.widget.Sgs2DialogBox;
+import org.sakaiproject.sgs2.client.ui.widget.Sgs2MenuBar;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -44,6 +46,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -95,7 +98,7 @@ public class Sgs2 implements EntryPoint {
 	private MenuBar menu = null;
 	private MenuBar fileMenu = null;
 	private MenuBar editMenu = null;
-	private MenuBar scriptsMenu = null;
+	private Sgs2MenuBar scriptsMenu = null;
 	
 	private HTML status = null;
 	
@@ -156,7 +159,7 @@ public class Sgs2 implements EntryPoint {
 		menu = new MenuBar();
 		fileMenu = new MenuBar(true);
 		editMenu = new MenuBar(true);
-		scriptsMenu = new MenuBar(true);
+		scriptsMenu = new Sgs2MenuBar(true);
 	}
 	
 	public void onModuleLoad() {
@@ -170,6 +173,11 @@ public class Sgs2 implements EntryPoint {
 		// Setup Auto Save Timer
 		autoSaveTimer = getAutoSaveTimer();
 		autoSaveTimer.scheduleRepeating(autoSaveInterval);
+		
+		// Configure Menus
+		fileMenu.setAnimationEnabled(true);
+		editMenu.setAnimationEnabled(true);
+		scriptsMenu.setAnimationEnabled(true);
 		
 		// File Menu items
 		fileMenu.addItem("New", getMenuFileNewCommand());
@@ -212,6 +220,7 @@ public class Sgs2 implements EntryPoint {
 		});
 		
 		// Make a new menu bar, adding a few cascading menus to it.
+		menu.setAnimationEnabled(true);
 	    menu.addItem("File", fileMenu);
 	    menu.addItem("Edit", editMenu);
 	    menu.addItem("Scripts", scriptsMenu);
@@ -319,6 +328,7 @@ public class Sgs2 implements EntryPoint {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				textArea.setText("");
+				textArea.setFocus(true);
 			}
 		};
 	}
@@ -439,17 +449,17 @@ public class Sgs2 implements EntryPoint {
 				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 			public void onSuccess(FavoriteResult result) {
-				
 				Collection<String> scriptNames = result.getFavorite();
 				for(final String scriptName : scriptNames) {
-					scriptsMenu.addItem(scriptName, new Command() {
-						public void execute() {
-							groovyShellService.getScript(scriptName, getSecureToken(), getScriptResultAsyncCallback());
-						}
-					});
+					if(!menuBarHasName(scriptsMenu, scriptName)) {
+						scriptsMenu.addItem(scriptName, new Command() {
+							public void execute() {
+								groovyShellService.getScript(scriptName, getSecureToken(), getScriptResultAsyncCallback());
+							}
+						});
+					}
 				}
 			}
-			
 		};
 	}
 	
@@ -469,6 +479,7 @@ public class Sgs2 implements EntryPoint {
 				else {
 					scriptName.setText(result.getName());
 					textArea.setText(result.getScript());
+					textArea.setFocus(true);
 				}
 			}
 		};
@@ -488,13 +499,20 @@ public class Sgs2 implements EntryPoint {
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 				else {
-					scriptsMenu.addItem(result.getName(), new Command() {
-						public void execute() {
-							groovyShellService.getScript(result.getName(), getSecureToken(), getScriptResultAsyncCallback());
-						}
-					});
-					
-					consoleFlowPanel.add(new HTML("Added script [" + result.getName() + "] to the Scripts menu"));
+					if(menuBarHasName(scriptsMenu, result.getName())) {
+						consoleFlowPanel.add(new HTML("INFO: Script [" + result.getName() + "] already exists in the scripts menu"));
+						resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					}
+					else {
+						scriptsMenu.addItem(result.getName(), new Command() {
+							public void execute() {
+								groovyShellService.getScript(result.getName(), getSecureToken(), getScriptResultAsyncCallback());
+							}
+						});
+
+						consoleFlowPanel.add(new HTML("INFO: Added script [" + result.getName() + "] to the Scripts menu"));
+						resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					}
 				}
 			}
 		};
@@ -611,6 +629,7 @@ public class Sgs2 implements EntryPoint {
 				else {
 					scriptUuid = result.getScriptUuid();
 					textArea.setText(result.getScript());
+					textArea.setFocus(true);
 					scriptName.setText((null == result.getName()) ? "" : result.getName() );
 				}
 			}
@@ -725,6 +744,20 @@ public class Sgs2 implements EntryPoint {
 			return;
 		}
 	}
+
+	// Helper methods
+	private boolean menuBarHasName(Sgs2MenuBar menuBar, String name) {
+	
+		List<MenuItem> menuItems = menuBar.getItems();
+		for(MenuItem menuItem : menuItems) {
+			if(menuItem.getText().equals(name)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	
 	private void displayErrorDialog(String errorMessage) {
 		
