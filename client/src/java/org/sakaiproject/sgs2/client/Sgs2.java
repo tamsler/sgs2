@@ -40,6 +40,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -221,6 +222,7 @@ public class Sgs2 implements EntryPoint {
 		
 		// Make a new menu bar, adding a few cascading menus to it.
 		menu.setAnimationEnabled(true);
+		menu.setAutoOpen(true);
 	    menu.addItem("File", fileMenu);
 	    menu.addItem("Edit", editMenu);
 	    menu.addItem("Scripts", scriptsMenu);
@@ -233,7 +235,7 @@ public class Sgs2 implements EntryPoint {
 		resultTabPanel.add(stackTraceFlowPanel, "Stack Trace");
 		resultTabPanel.add(historyFlowPanel, "History");
 		resultTabPanel.add(consoleFlowPanel, "Console");
-		
+		resultTabPanel.setAnimationEnabled(true);
 		resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
 		
 		runButton.addClickHandler(getRunClickHandler());
@@ -251,9 +253,11 @@ public class Sgs2 implements EntryPoint {
 		statusPanel.setWidth("200px");
 		status.setHeight("12px");
 		menuAndStatusPanel.add(menu);
-		menuAndStatusPanel.add(statusPanel);
+		DecoratorPanel decoratorPanel = new DecoratorPanel();
+		decoratorPanel.add(statusPanel);
+		menuAndStatusPanel.add(decoratorPanel);
 		menuAndStatusPanel.setCellHorizontalAlignment(menu, HasHorizontalAlignment.ALIGN_LEFT);
-		menuAndStatusPanel.setCellHorizontalAlignment(statusPanel, HasHorizontalAlignment.ALIGN_RIGHT);
+		menuAndStatusPanel.setCellHorizontalAlignment(decoratorPanel, HasHorizontalAlignment.ALIGN_RIGHT);
 		menuAndStatusPanel.setSpacing(3);
 		menuAndStatusPanel.setHeight("35px");
 		menuAndStatusPanel.setWidth("100%");
