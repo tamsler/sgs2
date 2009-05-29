@@ -14,7 +14,7 @@
 		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
 		<property name="mappings">
 			<map>
-				<entry key="/**/rpc/sgs2" value-ref="SgsService" />
+				<entry key="/**/shell" value-ref="SgsService" />
 				<entry key="/*" value-ref="myServletForwardingController" />
 			</map>
 		</property>

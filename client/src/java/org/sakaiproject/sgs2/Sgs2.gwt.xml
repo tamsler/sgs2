@@ -17,8 +17,5 @@
 
 	<!-- Specify the app entry point class.                         -->
 	<entry-point class='org.sakaiproject.sgs2.client.Sgs2' />
-
-	<!-- For Sakai Mode : Comment this out for Hosted Mode-->
-	<servlet path="/rpc/sgs2"
-		class="org.sakaiproject.sgs2.server.GroovyShellServiceImpl" />
+	
 </module>

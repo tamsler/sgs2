@@ -124,7 +124,7 @@ public class Sgs2 implements EntryPoint {
 	public Sgs2() {
 		
 		// This is a reference for the declared servlet in Sgs2.gwt.xml
-		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "rpc/sgs2");
+		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "shell");
 		
 		// Fix Sakai parent iFrame height
 		configureSakaiParentIframe();
@@ -220,6 +220,7 @@ public class Sgs2 implements EntryPoint {
 			}
 		});
 		
+	
 		// Make a new menu bar, adding a few cascading menus to it.
 		menu.setAnimationEnabled(true);
 		menu.setAutoOpen(true);

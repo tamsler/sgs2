@@ -7,13 +7,13 @@
  
   <!-- Servlets -->
   <servlet>
-    <servlet-name>sgs2.rpc.sgs2</servlet-name>
+    <servlet-name>groovyShellService</servlet-name>
     <servlet-class>org.sakaiproject.sgs2.server.mock.GroovyShellServiceMockImpl</servlet-class>
   </servlet>
   
   <servlet-mapping>
-    <servlet-name>sgs2.rpc.sgs2</servlet-name>
-    <url-pattern>/sgs2/rpc/sgs2</url-pattern>
+    <servlet-name>groovyShellService</servlet-name>
+    <url-pattern>/sgs2/shell</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
