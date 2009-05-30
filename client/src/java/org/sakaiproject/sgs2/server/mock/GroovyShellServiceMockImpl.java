@@ -30,21 +30,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.sakaiproject.sgs2.client.FavoriteResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
-import org.sakaiproject.sgs2.client.InitAutoSaveResult;
-import org.sakaiproject.sgs2.client.LatestScriptResult;
-import org.sakaiproject.sgs2.client.MarkAsFavoriteResult;
-import org.sakaiproject.sgs2.client.SaveResult;
-import org.sakaiproject.sgs2.client.ScriptExecutionResult;
-import org.sakaiproject.sgs2.client.ScriptParseResult;
-import org.sakaiproject.sgs2.client.ScriptResult;
+import org.sakaiproject.sgs2.client.async.result.FavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.InitAutoSaveResult;
+import org.sakaiproject.sgs2.client.async.result.LatestScriptResult;
+import org.sakaiproject.sgs2.client.async.result.MarkAsFavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.SaveResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptParseResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptResult;
 import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
-import org.sakaiproject.sgs2.server.mock.ScriptMock;
+import org.sakaiproject.sgs2.client.exceptions.Server500Exception;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -52,15 +50,13 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Log LOG = LogFactory.getLog(GroovyShellServiceMockImpl.class);
-
 	private Map<String, ScriptMock> autoSaveMap = new HashMap<String, ScriptMock>();
 
 	private ScriptMock latestScriptRef = null;
 
 	// Mock Impl
 	public ScriptExecutionResult run(String sourceCode, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		StringWriter output = new StringWriter();
 		Binding binding = new Binding();
@@ -92,7 +88,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	// Mock Impl
 	public ScriptParseResult parse(String sourceCode, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		StringWriter stackTrace = new StringWriter();
 
@@ -119,7 +115,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	// Mock Impl
 	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		SaveResult autoSaveResult = new SaveResult();
 		ScriptMock script = null;
@@ -142,7 +138,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			autoSaveMap.put(uuid, script);
 		}
 		catch(Exception e) {
-			autoSaveResult.setError(e.getMessage());
+			throw new Server500Exception(e.getMessage());
 		}
 
 		autoSaveResult.setActionType(actionType);
@@ -151,7 +147,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 	// Mock Impl
 	public InitAutoSaveResult initAutoSave(String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		InitAutoSaveResult initAutoSaveResult = null;
 
@@ -171,7 +167,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 
 	public LatestScriptResult getLatestScript(String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		LatestScriptResult latestScriptResult = new LatestScriptResult();
 
@@ -191,7 +187,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 
 	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		MarkAsFavoriteResult markAsFavoriteResult = new MarkAsFavoriteResult();
 		if(autoSaveMap.containsKey(uuid)) {
@@ -201,14 +197,14 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			markAsFavoriteResult.setName(script.getName());
 		}
 		else {
-			markAsFavoriteResult.setError("Script does not exist");
+			throw new Server500Exception("MOCK: Script does not exist");
 		}
 
 		return markAsFavoriteResult;
 	}
 
 	public ScriptResult getScript(String name, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		ScriptResult scriptResult = new ScriptResult();
 		scriptResult.setName(name);
@@ -224,13 +220,11 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 		}
 
 
-		scriptResult.setError("Wasn't abel to fine script with name = " + name);
-
-		return scriptResult;
+		throw new Server500Exception("MOCK: Wasn't abel to fine script with name = " + name);
 	}
 
 	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		SaveResult saveResult = new SaveResult();
 
@@ -250,7 +244,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	}
 
 	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 
 		SaveResult saveResult = new SaveResult();
 		saveResult.setActionType(actionType);
@@ -273,14 +267,14 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 			latestScriptRef = script;
 		}
 		else {
-			saveResult.setError("Script does not exists");
+			throw new Server500Exception("MOCK: Script does not exists");
 		}
 		saveResult.setNameExists(Boolean.FALSE);
 		return saveResult;
 	}
 
 	public FavoriteResult getFavorite(String secureToken)
-			throws RpcSecurityException {
+			throws RpcSecurityException, Server500Exception {
 		
 		FavoriteResult favoriteResult = new FavoriteResult();
 		

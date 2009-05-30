@@ -16,48 +16,49 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
 import java.io.Serializable;
 
-public class ScriptExecutionResult implements AsyncCallbackResult, Serializable {
+
+public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	private String result;
-	private String output;
-	private String stackTrace;
-	private String error;
-	
-	public String getResult() {
-		return result;
-	}
-	
-	public void setResult(String result) {
-		this.result = result;
-	}
-	
-	public String getOutput() {
-		return output;
-	}
-	
-	public void setOutput(String output) {
-		this.output = output;
-	}
-	
-	public String getStackTrace() {
-		return stackTrace;
-	}
-	
-	public void setStackTrace(String stackTrace) {
-		this.stackTrace = stackTrace;
+
+	private String scriptUuid;
+	private String script;
+	private Boolean hasScript;
+	private String name;
+
+	public String getScriptUuid() {
+		return scriptUuid;
 	}
 
-	public String getError() {
-		return error;
+	public void setScriptUuid(String scriptUuid) {
+		this.scriptUuid = scriptUuid;
 	}
 
-	public void setError(String error) {
-		this.error = error;
+	public String getScript() {
+		return script;
+	}
+
+	public void setScript(String script) {
+		this.script = script;
+	}
+
+	public Boolean getHasScript() {
+		return hasScript;
+	}
+
+	public void setHasScript(Boolean hasScript) {
+		this.hasScript = hasScript;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

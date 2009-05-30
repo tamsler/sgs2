@@ -23,6 +23,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
+import org.sakaiproject.sgs2.client.async.result.AsyncCallbackResult;
+import org.sakaiproject.sgs2.client.async.result.FavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.InitAutoSaveResult;
+import org.sakaiproject.sgs2.client.async.result.LatestScriptResult;
+import org.sakaiproject.sgs2.client.async.result.MarkAsFavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.SaveResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptParseResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptResult;
 import org.sakaiproject.sgs2.client.ui.widget.Sgs2DialogBox;
 import org.sakaiproject.sgs2.client.ui.widget.Sgs2MenuBar;
 
@@ -476,16 +485,10 @@ public class Sgs2 implements EntryPoint {
 			}
 			public void onSuccess(ScriptResult result) {
 				checkResult(result, null);
-				if(null != result.getError() && !"".equals(result.getError())) {
-					consoleFlowPanel.add(new HTML("Error ocured during getScript .."));
-					consoleFlowPanel.add(new HTML(result.getError()));
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				}
-				else {
-					scriptName.setText(result.getName());
-					textArea.setText(result.getScript());
-					textArea.setFocus(true);
-				}
+
+				scriptName.setText(result.getName());
+				textArea.setText(result.getScript());
+				textArea.setFocus(true);
 			}
 		};
 	}
@@ -498,31 +501,25 @@ public class Sgs2 implements EntryPoint {
 			}
 			public void onSuccess(final MarkAsFavoriteResult result) {
 				checkResult(result, null);
-				if(null != result.getError() && !"".equals(result.getError())) {
-					consoleFlowPanel.add(new HTML("Error ocured during markAsFavorite .."));
-					consoleFlowPanel.add(new HTML(result.getError()));
+
+				if(menuBarHasName(scriptsMenu, result.getName())) {
+					consoleFlowPanel.add(new HTML("INFO: Script [" + result.getName() + "] already exists in the scripts menu"));
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 				else {
-					if(menuBarHasName(scriptsMenu, result.getName())) {
-						consoleFlowPanel.add(new HTML("INFO: Script [" + result.getName() + "] already exists in the scripts menu"));
-						resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-					}
-					else {
-						scriptsMenu.addItem(result.getName(), new Command() {
-							public void execute() {
-								groovyShellService.getScript(result.getName(), getSecureToken(), getScriptResultAsyncCallback());
-							}
-						});
+					scriptsMenu.addItem(result.getName(), new Command() {
+						public void execute() {
+							groovyShellService.getScript(result.getName(), getSecureToken(), getScriptResultAsyncCallback());
+						}
+					});
 
-						consoleFlowPanel.add(new HTML("INFO: Added script [" + result.getName() + "] to the Scripts menu"));
-						resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-					}
+					consoleFlowPanel.add(new HTML("INFO: Added script [" + result.getName() + "] to the Scripts menu"));
+					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 			}
 		};
 	}
-	
+
 	private AsyncCallback<SaveResult> getSaveAsyncCallback() {
 		return new AsyncCallback<SaveResult>() {
 			public void onFailure(Throwable caught) {
@@ -532,22 +529,14 @@ public class Sgs2 implements EntryPoint {
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
 
-				if(null != result.getError() && !"".equals(result.getError())) {
-					consoleFlowPanel.add(new HTML(result.getError()));
-					status.setHTML("Error ocured during save ...");
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				}
-				else {
-
-					status.setHTML("Saved");
-					statusSaveTimer = new Timer() {
-						@Override
-						public void run() {
-							status.setHTML("");
-						}
-					};
-					statusSaveTimer.schedule(saveStatusChange);
-				}
+				status.setHTML("Saved");
+				statusSaveTimer = new Timer() {
+					@Override
+					public void run() {
+						status.setHTML("");
+					}
+				};
+				statusSaveTimer.schedule(saveStatusChange);
 			}
 		};
 	}
@@ -561,25 +550,14 @@ public class Sgs2 implements EntryPoint {
 			}
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
-				
-				if(null != result.getError() && !"".equals(result.getError())) {
-					consoleFlowPanel.add(new HTML(result.getError()));
-					status.setHTML("Error ocured during auto saveAs ...");
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				}
-				else {
-
-					statusAutoSaveTimer = new Timer() {
-						@Override
-						public void run() {
-							status.setHTML("");
-						}
-					};
-
-					statusAutoSaveTimer.schedule(autoSaveStatusChange);
-				}
-			}
-			
+				statusAutoSaveTimer = new Timer() {
+					@Override
+					public void run() {
+						status.setHTML("");
+					}
+				};
+				statusAutoSaveTimer.schedule(autoSaveStatusChange);
+			}			
 		};
 	}
 
@@ -593,13 +571,8 @@ public class Sgs2 implements EntryPoint {
 			public void onSuccess(SaveResult result) {
 
 				checkResult(result, null);
-
-				if(null != result.getError() && !"".equals(result.getError())) {
-					consoleFlowPanel.add(new HTML(result.getError()));
-					status.setHTML("Error ocured during save ...");
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-				}
-				else if(result.getNameExists()) {
+				
+				if(result.getNameExists()) {
 					final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
 					dialogBox.setTitle(i18n.dialogText());
 					dialogBox.setButtonText(i18n.dialogCloseButton());
@@ -612,7 +585,6 @@ public class Sgs2 implements EntryPoint {
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 					scriptName.setText(result.getName());
 				}
-
 			}
 		};
 	}

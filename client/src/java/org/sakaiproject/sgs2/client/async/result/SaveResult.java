@@ -16,9 +16,41 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
-// Marker Interface
-public interface AsyncCallbackResult {
+import java.io.Serializable;
 
+import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
+
+public class SaveResult implements AsyncCallbackResult, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private String name;
+	private ActionType actionType;
+	private Boolean nameExists;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public ActionType getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(ActionType actionType) {
+		this.actionType = actionType;
+	}
+
+	public Boolean getNameExists() {
+		return nameExists;
+	}
+
+	public void setNameExists(Boolean nameExists) {
+		this.nameExists = nameExists;
+	}
 }

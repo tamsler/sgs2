@@ -16,39 +16,23 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
 import java.io.Serializable;
+import java.util.Collection;
 
-public class ScriptResult implements AsyncCallbackResult, Serializable {
+
+public class FavoriteResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	String name;
-	String script;
-	String error;
+	private Collection<String> favorite;
 
-	public String getName() {
-		return name;
+	public Collection<String> getFavorite() {
+		return favorite;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getScript() {
-		return script;
-	}
-
-	public void setScript(String script) {
-		this.script = script;
-	}
-
-	public String getError() {
-		return error;
-	}
-
-	public void setError(String error) {
-		this.error = error;
+	public void setFavorite(Collection<String> favorite) {
+		this.favorite = favorite;
 	}
 }

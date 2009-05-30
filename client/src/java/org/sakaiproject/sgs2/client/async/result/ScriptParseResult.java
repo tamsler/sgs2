@@ -16,16 +16,16 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
 import java.io.Serializable;
+
 
 public class ScriptParseResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
 	private String stackTrace;
-	private String error;
 
 	public String getStackTrace() {
 		return stackTrace;
@@ -33,12 +33,4 @@ public class ScriptParseResult implements AsyncCallbackResult, Serializable {
 	public void setStackTrace(String stackTrace) {
 		this.stackTrace = stackTrace;
 	}
-	public String getError() {
-		return error;
-	}
-	public void setError(String error) {
-		this.error = error;
-	}
-	
-	
 }

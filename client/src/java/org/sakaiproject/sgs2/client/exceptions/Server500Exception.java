@@ -16,25 +16,26 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client.ui.widget;
+package org.sakaiproject.sgs2.client.exceptions;
 
-import java.util.List;
+import java.io.Serializable;
 
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
+public class Server500Exception extends Exception implements Serializable {
 
-public class Sgs2MenuBar extends MenuBar {
-	
-	public Sgs2MenuBar() {
-		super();
+	private static final long serialVersionUID = 1L;
+
+	public Server500Exception() {
 	}
-	
-	public Sgs2MenuBar(boolean vertical) {
-		super(vertical);
+
+	public Server500Exception(String message) {
+		super(message);
 	}
-	
-	@Override
-	public List<MenuItem> getItems() {
-		return super.getItems();
+
+	public Server500Exception(Throwable cause) {
+		super(cause);
+	}
+
+	public Server500Exception(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

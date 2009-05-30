@@ -19,6 +19,14 @@
 package org.sakaiproject.sgs2.client;
 
 import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
+import org.sakaiproject.sgs2.client.async.result.FavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.InitAutoSaveResult;
+import org.sakaiproject.sgs2.client.async.result.LatestScriptResult;
+import org.sakaiproject.sgs2.client.async.result.MarkAsFavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.SaveResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptParseResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptResult;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 

@@ -16,50 +16,40 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
 import java.io.Serializable;
 
-import org.sakaiproject.sgs2.client.GroovyShellService.ActionType;
 
-public class SaveResult implements AsyncCallbackResult, Serializable {
+public class ScriptExecutionResult implements AsyncCallbackResult, Serializable {
 
 	private static final long serialVersionUID = 1L;
-
-	private String name;
-	private String error;
-	private ActionType actionType;
-	private Boolean nameExists;
-
-	public String getName() {
-		return name;
+	
+	private String result;
+	private String output;
+	private String stackTrace;
+	
+	public String getResult() {
+		return result;
 	}
-
-	public void setName(String name) {
-		this.name = name;
+	
+	public void setResult(String result) {
+		this.result = result;
 	}
-
-	public ActionType getActionType() {
-		return actionType;
+	
+	public String getOutput() {
+		return output;
 	}
-
-	public void setActionType(ActionType actionType) {
-		this.actionType = actionType;
+	
+	public void setOutput(String output) {
+		this.output = output;
 	}
-
-	public String getError() {
-		return error;
+	
+	public String getStackTrace() {
+		return stackTrace;
 	}
-
-	public void setError(String error) {
-		this.error = error;
-	}
-
-	public Boolean getNameExists() {
-		return nameExists;
-	}
-
-	public void setNameExists(Boolean nameExists) {
-		this.nameExists = nameExists;
+	
+	public void setStackTrace(String stackTrace) {
+		this.stackTrace = stackTrace;
 	}
 }

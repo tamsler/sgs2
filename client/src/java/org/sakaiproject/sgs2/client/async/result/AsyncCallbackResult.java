@@ -16,21 +16,9 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
-import java.io.Serializable;
+// Marker Interface
+public interface AsyncCallbackResult {
 
-public class InitAutoSaveResult implements AsyncCallbackResult, Serializable  {
-	
-	private static final long serialVersionUID = 1L;
-
-	private String scriptUuid;
-
-	public String getScriptUuid() {
-		return scriptUuid;
-	}
-
-	public void setScriptUuid(String scriptUuid) {
-		this.scriptUuid = scriptUuid;
-	}
 }

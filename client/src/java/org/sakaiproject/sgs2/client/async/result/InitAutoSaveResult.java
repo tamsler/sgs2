@@ -16,18 +16,16 @@
  *
  **********************************************************************************/
 
-package org.sakaiproject.sgs2.client;
+package org.sakaiproject.sgs2.client.async.result;
 
 import java.io.Serializable;
 
-public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 
+public class InitAutoSaveResult implements AsyncCallbackResult, Serializable  {
+	
 	private static final long serialVersionUID = 1L;
 
 	private String scriptUuid;
-	private String script;
-	private Boolean hasScript;
-	private String name;
 
 	public String getScriptUuid() {
 		return scriptUuid;
@@ -35,29 +33,5 @@ public class LatestScriptResult implements AsyncCallbackResult, Serializable {
 
 	public void setScriptUuid(String scriptUuid) {
 		this.scriptUuid = scriptUuid;
-	}
-
-	public String getScript() {
-		return script;
-	}
-
-	public void setScript(String script) {
-		this.script = script;
-	}
-
-	public Boolean getHasScript() {
-		return hasScript;
-	}
-
-	public void setHasScript(Boolean hasScript) {
-		this.hasScript = hasScript;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 }

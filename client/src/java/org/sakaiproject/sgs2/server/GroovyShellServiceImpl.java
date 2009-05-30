@@ -31,16 +31,17 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.gwtwidgets.server.spring.GWTSpringController;
 import org.sakaiproject.authz.api.SecurityService;
-import org.sakaiproject.sgs2.client.FavoriteResult;
 import org.sakaiproject.sgs2.client.GroovyShellService;
-import org.sakaiproject.sgs2.client.InitAutoSaveResult;
-import org.sakaiproject.sgs2.client.LatestScriptResult;
-import org.sakaiproject.sgs2.client.MarkAsFavoriteResult;
-import org.sakaiproject.sgs2.client.SaveResult;
-import org.sakaiproject.sgs2.client.ScriptExecutionResult;
-import org.sakaiproject.sgs2.client.ScriptParseResult;
-import org.sakaiproject.sgs2.client.ScriptResult;
+import org.sakaiproject.sgs2.client.async.result.FavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.InitAutoSaveResult;
+import org.sakaiproject.sgs2.client.async.result.LatestScriptResult;
+import org.sakaiproject.sgs2.client.async.result.MarkAsFavoriteResult;
+import org.sakaiproject.sgs2.client.async.result.SaveResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptExecutionResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptParseResult;
+import org.sakaiproject.sgs2.client.async.result.ScriptResult;
 import org.sakaiproject.sgs2.client.exceptions.RpcSecurityException;
+import org.sakaiproject.sgs2.client.exceptions.Server500Exception;
 import org.sakaiproject.sgs2.client.model.Script;
 import org.sakaiproject.tool.api.SessionManager;
 import org.sakaiproject.user.api.UserDirectoryService;
@@ -58,7 +59,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public ScriptExecutionResult run(String sourceCode, String secureToken)
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -122,7 +123,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public ScriptParseResult parse(String sourceCode, String secureToken)
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -151,7 +152,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public SaveResult save(String uuid, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -160,7 +161,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public InitAutoSaveResult initAutoSave(String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -189,7 +190,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public LatestScriptResult getLatestScript(String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -221,7 +222,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 
 	// API Impl
 	public MarkAsFavoriteResult markAsFavorite(String uuid, String name, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -234,9 +235,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script = groovyShellManager.getScript(uuid);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			markAsFavoriteResult.setError(e.getMessage());
-			return markAsFavoriteResult;
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		script.setFavorite(Boolean.TRUE);
@@ -246,8 +245,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		}
 		catch(Exception e) {
 			LOG.error("Was not able to mark script as favorite");
-			markAsFavoriteResult.setError(e.getMessage());
-			e.printStackTrace();
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		return markAsFavoriteResult;
@@ -255,7 +253,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public ScriptResult getScript(String name, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -280,8 +278,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script = groovyShellManager.getScript(userId, name);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			scriptResult.setError(e.getMessage());
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		if(null != script) {
@@ -293,7 +290,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	
 	// API Impl
 	public SaveResult autoSave(String uuid, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 	
@@ -307,14 +304,11 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script = groovyShellManager.getScript(uuid);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			saveResult.setError(e.getMessage());
-			return saveResult;
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		if(null == script) {
-			saveResult.setError("ERROR: Was not able to get script with uuid = " + uuid);
-			return saveResult;
+			throw new Server500Exception("ERROR: Was not able to get script with uuid = " + uuid);
 		}
 		
 		// update script arguments
@@ -329,9 +323,8 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			groovyShellManager.update(script);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			saveResult.setError(e.getMessage());
 			LOG.error("Was not able to auto save script object : uuid = " + uuid);
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		return saveResult;
@@ -339,7 +332,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 
 	// API Impl
 	public SaveResult saveAs(String uuid, String name, String sourceCode, ActionType actionType, String secureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 	
@@ -364,9 +357,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script = groovyShellManager.getScript(userId, name);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			saveResult.setError(e.getMessage());
-			return saveResult;
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		if(null != script) {
@@ -382,14 +373,11 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script = groovyShellManager.getScript(uuid);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			saveResult.setError(e.getMessage());
-			return saveResult;
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		if(null == script) {
-			saveResult.setError("ERROR: was not able to get script with uuid = " + uuid);
-			return saveResult;
+			throw new Server500Exception("ERROR: was not able to get script with uuid = " + uuid);
 		}
 		
 		
@@ -410,9 +398,8 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			groovyShellManager.update(script);
 		}
 		catch(Exception e) {
-			e.printStackTrace();
-			saveResult.setError(e.getMessage());
 			LOG.error("Was not able to save script object");
+			throw new Server500Exception(e.getMessage());
 		}
 		
 		return saveResult;
@@ -420,7 +407,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 
 	// API Impl
 	public FavoriteResult getFavorite(String secureToken)
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
 		
@@ -448,7 +435,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	 * Second, we check if current user is the admin user
 	 */
 	private void isSecure(String clientSecureToken) 
-		throws RpcSecurityException {
+		throws RpcSecurityException, Server500Exception {
 		
 		if((null == sessionManager) || (null == securityService) || null == userDirectoryService) {
 			throw new RpcSecurityException("Security Exception: SGS2 RPC");
