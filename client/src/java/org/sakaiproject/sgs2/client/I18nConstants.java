@@ -22,6 +22,38 @@ import com.google.gwt.i18n.client.Constants;
 
 public interface I18nConstants extends Constants {
 	
+	String scriptLabel();
+	
+	String runButton();
+	String parseButton();
+	String clearButton();
+	
+	String fileMenuNew();
+	String fileMenuSave();
+	String fileMenuSaveAs();
+	String fileMenuInfo();
+	
+	String editMenuAddToScriptsMenu();
+	
+	String scriptsMenuCookies();
+	
+	String mainMenuFile();
+	String mainMenuEdit();
+	String mainMenuScripts();
+	
+	String executionOutput();
+	String executionResult();
+	String executionStackTrace();
+	String executionHistory();
+	String executionConsole();
+	
+	String commandCookiesMsg1();
+	String commandCookiesMsg2();
+	String commandCookiesName();
+	String commandCookiesValue();
+	
+	String commandEditAddToScripts();
+	
 	String dialogText();
 	String dialogTextError();
 	String dialogCloseButton();
@@ -29,6 +61,27 @@ public interface I18nConstants extends Constants {
 	String dialogInfoContentAuthor();
 	String dialogInfoContentUrl();
 	String dialogSaveButton();
+	String dialogErrorMsg();
 	String dialogCancelButton();
 	String dialogSaveName();
+	
+	String commandSaveAsMsg();
+	
+	String timerAutoSave();
+	
+	String asyncCallbackSave();
+	
+	String asyncCallbackSaveAsMsg1();
+	String asyncCallbackSaveAsMsg2();
+	
+	String asyncCallbackInitAutoSaveMsg();
+	
+	String asyncCallbackParseMsg();
+
+	String historyStackTrace();
+	String historyResult();
+	String historyOutput();
+	
+	String checkResultMsg();
+
 }

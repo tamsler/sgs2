@@ -70,11 +70,17 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		StringWriter stackTrace = new StringWriter();
 		PrintWriter errorWriter = new PrintWriter(stackTrace);
 		
+		GroovyShell groovyShell = new GroovyShell(binding);
 		Object result = null;
+		long start = 0;
+		long end = 0;
 		
 		try {
 			
-			result = new GroovyShell(binding).evaluate(sourceCode);
+			start = System.currentTimeMillis();
+			result = groovyShell.evaluate(sourceCode);
+			end = System.currentTimeMillis();
+			
 			
 		} catch (MultipleCompilationErrorsException e) {
 			
@@ -83,6 +89,12 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		} catch (Throwable t) {
 			  
 			  t.printStackTrace(errorWriter);
+		}
+		
+		long executionTimeInMillis = 0;
+		
+		if(0 != start && 0 != end) {
+			executionTimeInMillis = end - start;
 		}
 		
 		// Persisting script information
@@ -96,8 +108,8 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			script.setUserId(userEid);
 		}
 		script.setScript(sourceCode);
-		script.setOutput((null == output || "".equals(output)) ? null : output.toString());
-		script.setResult((null == result || "".equals(result)) ? null : result.toString());
+		script.setOutput((null == output || "".equals(output)) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
+		script.setResult((null == result || "".equals(result)) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
 		script.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
 		script.setActionType(ActionType.SCRIPT_EXECUTION.name);
 		script.setActionDate(new Date());
@@ -114,8 +126,8 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		// Sending result back to the client
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : output.toString());
-		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : result.toString());
+		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
 		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
 		
 		return scriptExecutionResult;

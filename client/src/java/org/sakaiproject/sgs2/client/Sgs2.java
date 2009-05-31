@@ -122,7 +122,8 @@ public class Sgs2 implements EntryPoint {
 	private int saveStatusChange = 5000;
 	
 	// I18N
-	I18nConstants i18n = null;
+	I18nConstants i18nC = null;
+	I18nMessages i18nM = null;
 		
 	// Timers
 	private Timer autoSaveTimer = null;
@@ -138,7 +139,8 @@ public class Sgs2 implements EntryPoint {
 		// Fix Sakai parent iFrame height
 		configureSakaiParentIframe();
 		
-		i18n = GWT.create(I18nConstants.class);
+		i18nC = GWT.create(I18nConstants.class);
+		i18nM = GWT.create(I18nMessages.class);
 		
 		mainVerticalPanel = new VerticalPanel();
 		inputVerticalPanel = new VerticalPanel();
@@ -149,14 +151,14 @@ public class Sgs2 implements EntryPoint {
 		
 		status = new HTML("");
 		
-		scriptLabel = new Label("Name:");
+		scriptLabel = new Label(i18nC.scriptLabel());
 		scriptName = new Label("");
 		
 		textArea = new TextArea();
 		
-		runButton = new Button("Run");
-		parseButton = new Button("Parse");
-		clearButton = new Button("Clear");
+		runButton = new Button(i18nC.runButton());
+		parseButton = new Button(i18nC.parseButton());
+		clearButton = new Button(i18nC.clearButton());
 		
 		resultTabPanel = new TabPanel();
 		
@@ -190,61 +192,32 @@ public class Sgs2 implements EntryPoint {
 		scriptsMenu.setAnimationEnabled(true);
 		
 		// File Menu items
-		fileMenu.addItem("New", getMenuFileNewCommand());
-		fileMenu.addItem("Save", getMenuFileSaveCommand());
-		fileMenu.addItem("Save As", getMenuFileSaveAsCommand());
-		fileMenu.addItem("Info", getMenuFileInfoCommand());
+		fileMenu.addItem(i18nC.fileMenuNew(), getMenuFileNewCommand());
+		fileMenu.addItem(i18nC.fileMenuSave(), getMenuFileSaveCommand());
+		fileMenu.addItem(i18nC.fileMenuSaveAs(), getMenuFileSaveAsCommand());
+		fileMenu.addItem(i18nC.fileMenuInfo(), getMenuFileInfoCommand());
 		
 		// Edit Menu items
-		editMenu.addItem("Add to Scripts Menu", new Command() {
-			public void execute() {
-				if(null == scriptName || "".equals(scriptName.getText())) {
-					final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
-					dialogBox.setTitle(i18n.dialogText());
-					dialogBox.setButtonText(i18n.dialogCloseButton());
-					dialogBox.addContent(new HTML("<i><b>INFO</b></i></br>Name the script by selecting File -> Save As"));
-					dialogBox.center();
-					dialogBox.show();
-				}
-				else {
-					groovyShellService.markAsFavorite(scriptUuid, scriptName.getText(), getSecureToken(), getMarkAsFavoriteAsyncCallback());
-				}
-			}
-		});
+		editMenu.addItem(i18nC.editMenuAddToScriptsMenu(), getMenuEditAddToScriptsMenu());
 		
 		// Scripts Menu items		
-		scriptsMenu.addItem("Show Client Cookies", new Command() {
-			public void execute() {
-				Collection<String> cookyNames = Cookies.getCookieNames();
-				if(cookyNames.size() == 0) {
-					consoleFlowPanel.add(new HTML("There are no client cookies : " + new Date().toString()));
-				}
-				else {
-					consoleFlowPanel.add(new HTML("List of client cookies : " + new Date().toString()));
-					for(String cookyName : cookyNames) {
-						consoleFlowPanel.add(new HTML("Name = " + cookyName + "  Value = " + Cookies.getCookie(cookyName)));
-					}
-				}
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
-			}
-		});
-		
+		scriptsMenu.addItem(i18nC.scriptsMenuCookies(), getMenuScriptsCookies());
 	
 		// Make a new menu bar, adding a few cascading menus to it.
 		menu.setAnimationEnabled(true);
 		menu.setAutoOpen(true);
-	    menu.addItem("File", fileMenu);
-	    menu.addItem("Edit", editMenu);
-	    menu.addItem("Scripts", scriptsMenu);
+	    menu.addItem(i18nC.mainMenuFile(), fileMenu);
+	    menu.addItem(i18nC.mainMenuEdit(), editMenu);
+	    menu.addItem(i18nC.mainMenuScripts(), scriptsMenu);
 		
 		// Attach and configure widgets
 		statusPanel.add(status);
 		
-		resultTabPanel.add(outputFlowPanel, "Output");
-		resultTabPanel.add(resultFlowPanel, "Result");
-		resultTabPanel.add(stackTraceFlowPanel, "Stack Trace");
-		resultTabPanel.add(historyFlowPanel, "History");
-		resultTabPanel.add(consoleFlowPanel, "Console");
+		resultTabPanel.add(outputFlowPanel, i18nC.executionOutput());
+		resultTabPanel.add(resultFlowPanel, i18nC.executionResult());
+		resultTabPanel.add(stackTraceFlowPanel, i18nC.executionStackTrace());
+		resultTabPanel.add(historyFlowPanel, i18nC.executionHistory());
+		resultTabPanel.add(consoleFlowPanel, i18nC.executionConsole());
 		resultTabPanel.setAnimationEnabled(true);
 		resultTabPanel.selectTab(TabbedPanel.OUTPUT.position);
 		
@@ -306,6 +279,7 @@ public class Sgs2 implements EntryPoint {
 		// Focus the cursor on the text area when the application loads
 		textArea.setFocus(true);
 		textArea.selectAll();
+		
 	}
 
 	// Methods
@@ -366,6 +340,42 @@ public class Sgs2 implements EntryPoint {
 		};
 	}
 	
+	private Command getMenuScriptsCookies() {
+		return new Command() {
+			public void execute() {
+				Collection<String> cookyNames = Cookies.getCookieNames();
+				if(cookyNames.size() == 0) {
+					consoleFlowPanel.add(new HTML(i18nC.commandCookiesMsg1() + new Date().toString()));
+				}
+				else {
+					consoleFlowPanel.add(new HTML(i18nC.commandCookiesMsg2() + new Date().toString()));
+					for(String cookyName : cookyNames) {
+						consoleFlowPanel.add(new HTML(i18nC.commandCookiesName() + cookyName + "<br/>"+ i18nC.commandCookiesValue() + Cookies.getCookie(cookyName)));
+					}
+				}
+				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			}
+		};
+	}
+	
+	private Command getMenuEditAddToScriptsMenu() {
+		return new Command() {
+			public void execute() {
+				if(null == scriptName || "".equals(scriptName.getText())) {
+					final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
+					dialogBox.setTitle(i18nC.dialogText());
+					dialogBox.setButtonText(i18nC.dialogCloseButton());
+					dialogBox.addContent(new HTML(i18nC.commandEditAddToScripts()));
+					dialogBox.center();
+					dialogBox.show();
+				}
+				else {
+					groovyShellService.markAsFavorite(scriptUuid, scriptName.getText(), getSecureToken(), getMarkAsFavoriteAsyncCallback());
+				}
+			}
+		};
+	}
+	
 	private Command getMenuFileNewCommand() {
 		return new Command() {
 			public void execute() {
@@ -381,11 +391,11 @@ public class Sgs2 implements EntryPoint {
 		return new Command() {
 			public void execute() {
 				final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
-				dialogBox.setTitle(i18n.dialogText());
-				dialogBox.setButtonText(i18n.dialogCloseButton());
-				dialogBox.addContent(new HTML(i18n.dialogInfoTitle()));
-				dialogBox.addContent(new HTML(i18n.dialogInfoContentAuthor()));
-				dialogBox.addContent(new HTML(i18n.dialogInfoContentUrl()));
+				dialogBox.setTitle(i18nC.dialogText());
+				dialogBox.setButtonText(i18nC.dialogCloseButton());
+				dialogBox.addContent(new HTML(i18nC.dialogInfoTitle()));
+				dialogBox.addContent(new HTML(i18nC.dialogInfoContentAuthor()));
+				dialogBox.addContent(new HTML(i18nC.dialogInfoContentUrl()));
 				dialogBox.addButtonClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						dialogBox.hide();
@@ -409,22 +419,22 @@ public class Sgs2 implements EntryPoint {
 		return new Command() {
 			public void execute() {
 				final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
-				dialogBox.setTitle(i18n.dialogText());
-				dialogBox.setButtonText(i18n.dialogCancelButton());
+				dialogBox.setTitle(i18nC.dialogText());
+				dialogBox.setButtonText(i18nC.dialogCancelButton());
 				HorizontalPanel horizontalPanel = new HorizontalPanel();
 				horizontalPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
 				horizontalPanel.setSpacing(3);
-				horizontalPanel.add(new Label(i18n.dialogSaveName()));
+				horizontalPanel.add(new Label(i18nC.dialogSaveName()));
 				final TextBox textBox = new TextBox();
 				textBox.setMaxLength(254);
 				horizontalPanel.add(textBox);
 				dialogBox.addContent(horizontalPanel);
-				dialogBox.addButton(i18n.dialogSaveButton(), new ClickHandler() {
+				dialogBox.addButton(i18nC.dialogSaveButton(), new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						String name = textBox.getText();
 						// Check input name legnth < 255
 						if(name.length() > 254) {
-							displayErrorDialog("Name length restriction : < 255 characters");
+							displayErrorDialog(i18nC.dialogErrorMsg());
 						}
 						else {
 							if(null != name && !"".equals(name)) {
@@ -432,7 +442,7 @@ public class Sgs2 implements EntryPoint {
 								dialogBox.hide();
 							}
 							else {
-								consoleFlowPanel.add(new HTML("WARN: SaveAs : Selected name is either null or empty"));
+								consoleFlowPanel.add(new HTML(i18nC.commandSaveAsMsg()));
 								resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 							}
 						}
@@ -450,7 +460,7 @@ public class Sgs2 implements EntryPoint {
 
 			@Override
 			public void run() {
-				status.setHTML("Auto Saving ...");
+				status.setHTML(i18nC.timerAutoSave());
 				groovyShellService.autoSave(scriptUuid, textArea.getText(), ActionType.AUTO_SAVE, getSecureToken(), getAutoSaveAsyncCallback());
 			}
 		};
@@ -503,7 +513,7 @@ public class Sgs2 implements EntryPoint {
 				checkResult(result, null);
 
 				if(menuBarHasName(scriptsMenu, result.getName())) {
-					consoleFlowPanel.add(new HTML("INFO: Script [" + result.getName() + "] already exists in the scripts menu"));
+					consoleFlowPanel.add(new HTML(i18nM.asyncCallbackMarkAsFavorite(result.getName())));
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 				else {
@@ -513,7 +523,7 @@ public class Sgs2 implements EntryPoint {
 						}
 					});
 
-					consoleFlowPanel.add(new HTML("INFO: Added script [" + result.getName() + "] to the Scripts menu"));
+					consoleFlowPanel.add(new HTML(i18nM.asyncCallbackMarkAsFavorite(result.getName())));
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 			}
@@ -529,7 +539,7 @@ public class Sgs2 implements EntryPoint {
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
 
-				status.setHTML("Saved");
+				status.setHTML(i18nC.asyncCallbackSave());
 				statusSaveTimer = new Timer() {
 					@Override
 					public void run() {
@@ -574,14 +584,14 @@ public class Sgs2 implements EntryPoint {
 				
 				if(result.getNameExists()) {
 					final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
-					dialogBox.setTitle(i18n.dialogText());
-					dialogBox.setButtonText(i18n.dialogCloseButton());
-					dialogBox.addContent(new HTML("<i><b>INFO</b></i></br>Name already exists. Please choose a new name"));
+					dialogBox.setTitle(i18nC.dialogText());
+					dialogBox.setButtonText(i18nC.dialogCloseButton());
+					dialogBox.addContent(new HTML(i18nC.asyncCallbackSaveAsMsg1()));
 					dialogBox.center();
 					dialogBox.show();
 				}
 				else {
-					consoleFlowPanel.add(new HTML("INFO: Source code has been saved"));
+					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackSaveAsMsg2()));
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 					scriptName.setText(result.getName());
 				}
@@ -627,7 +637,7 @@ public class Sgs2 implements EntryPoint {
 				
 				if(null == scriptUuid || "".equals(scriptUuid)) {
 					
-					consoleFlowPanel.add(new HTML("ERROR: initAutoSaveAsyncCallback() : autoSaveUuid is null or the empty string"));
+					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackInitAutoSaveMsg()));
 					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 				}
 			}
@@ -646,7 +656,7 @@ public class Sgs2 implements EntryPoint {
 				
 				String stackTrace = result.getStackTrace();
 				if(null == stackTrace || "".equals(stackTrace)) {
-					consoleFlowPanel.add(new HTML("PARSE Result: OK"));
+					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackParseMsg()));
 				}
 				else {
 					consoleFlowPanel.add(new HTML(result.getStackTrace()));
@@ -674,9 +684,9 @@ public class Sgs2 implements EntryPoint {
 				});
 				
 				// History
-				historyFlowPanel.insert(new HTML("STACK TRACE: " + result.getStackTrace()), 0);
-				historyFlowPanel.insert(new HTML("RESULT: " + result.getResult()), 0);
-				historyFlowPanel.insert(new HTML("OUTPUT: " + result.getOutput()), 0);
+				historyFlowPanel.insert(new HTML(i18nC.historyStackTrace() + result.getStackTrace()), 0);
+				historyFlowPanel.insert(new HTML(i18nC.historyResult() + result.getResult()), 0);
+				historyFlowPanel.insert(new HTML(i18nC.historyOutput() + result.getOutput()), 0);
 				historyFlowPanel.insert(new HTML("<br />==== " + new Date().toString() + " ===="), 0);
 
 				if(null != result.getOutput() && !"".equals(result.getOutput())) {
@@ -711,7 +721,7 @@ public class Sgs2 implements EntryPoint {
 	protected void checkResult(AsyncCallbackResult asyncCallbackResult, ErrorAction errorAction) {
 		
 		if(null == asyncCallbackResult) {
-			consoleFlowPanel.add(new HTML("ERROR: Server encountere a security issue : " + new Date().toString()));
+			consoleFlowPanel.add(new HTML(i18nC.checkResultMsg() + new Date().toString()));
 			resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			
 			if(null != errorAction) {
@@ -739,8 +749,8 @@ public class Sgs2 implements EntryPoint {
 	private void displayErrorDialog(String errorMessage) {
 		
 		final Sgs2DialogBox dialogBox = new Sgs2DialogBox();
-		dialogBox.setTitle(i18n.dialogTextError());
-		dialogBox.setButtonText(i18n.dialogCloseButton());
+		dialogBox.setTitle(i18nC.dialogTextError());
+		dialogBox.setButtonText(i18nC.dialogCloseButton());
 		dialogBox.addContent(new HTML(errorMessage));
 		dialogBox.center();
 		dialogBox.show();
