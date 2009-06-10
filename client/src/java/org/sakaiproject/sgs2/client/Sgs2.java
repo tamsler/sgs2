@@ -130,6 +130,8 @@ public class Sgs2 implements EntryPoint {
 	private Timer statusAutoSaveTimer = null;
 	private Timer statusSaveTimer = null;
 	
+	private int sakaiParentIFrameHeight = 620;
+	
 	// Constructor
 	public Sgs2() {
 		
@@ -137,7 +139,7 @@ public class Sgs2 implements EntryPoint {
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "shell");
 		
 		// Fix Sakai parent iFrame height
-		configureSakaiParentIframe();
+		configureSakaiParentIframe(sakaiParentIFrameHeight);
 		
 		i18nC = GWT.create(I18nConstants.class);
 		i18nM = GWT.create(I18nMessages.class);
@@ -284,7 +286,7 @@ public class Sgs2 implements EntryPoint {
 
 	// Methods
 	
-	private void configureSakaiParentIframe() {
+	private void configureSakaiParentIframe(int setHeight) {
 		
 		// Resize parent Sakai iframe
 		Document doc = getWindowParentDocument();
@@ -292,7 +294,9 @@ public class Sgs2 implements EntryPoint {
 		for(int i = 0; i < nodeList.getLength(); i++) {
 			IFrameElement iframe = (IFrameElement) nodeList.getItem(i);
 			if(iframe.getId().startsWith("Main")) {
-				iframe.setAttribute("style", "height: 620px;");
+				iframe.setAttribute("height", setHeight + "px");
+				iframe.setAttribute("style", "height: " + setHeight + "px;");
+				iframe.getStyle().setPropertyPx("height", setHeight);
 				break;
 			}
 		}
