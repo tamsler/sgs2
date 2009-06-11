@@ -49,10 +49,10 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -85,6 +85,7 @@ public class Sgs2 implements EntryPoint {
 	// UI
 	private Label scriptLabel = null;
 	private Label scriptName = null;
+	private CheckBox autoSaveConfigCheckBox = null;
 	private TextArea textArea = null; 
 	private Button runButton = null;
 	private Button parseButton = null;
@@ -112,14 +113,7 @@ public class Sgs2 implements EntryPoint {
 	
 	private HTML status = null;
 	
-	private String scriptUuid = null;
-	
-	// One minute
-	private int autoSaveInterval = 60000;
-	
-	// 5 seconds
-	private int autoSaveStatusChange = 5000;
-	private int saveStatusChange = 5000;
+	private String scriptUuid = null;	
 	
 	// I18N
 	I18nConstants i18nC = null;
@@ -130,8 +124,6 @@ public class Sgs2 implements EntryPoint {
 	private Timer statusAutoSaveTimer = null;
 	private Timer statusSaveTimer = null;
 	
-	private int sakaiParentIFrameHeight = 620;
-	
 	// Constructor
 	public Sgs2() {
 		
@@ -139,7 +131,7 @@ public class Sgs2 implements EntryPoint {
 		((ServiceDefTarget) groovyShellService).setServiceEntryPoint(GWT.getModuleBaseURL() + "shell");
 		
 		// Fix Sakai parent iFrame height
-		configureSakaiParentIframe(sakaiParentIFrameHeight);
+		configureSakaiParentIframe(AppConstants.SAKAI_PARENT_IFRAME_HEIGHT);
 		
 		i18nC = GWT.create(I18nConstants.class);
 		i18nM = GWT.create(I18nMessages.class);
@@ -155,6 +147,8 @@ public class Sgs2 implements EntryPoint {
 		
 		scriptLabel = new Label(i18nC.scriptLabel());
 		scriptName = new Label("");
+		
+		autoSaveConfigCheckBox = new CheckBox(i18nC.autoSaveConfigLabel());
 		
 		textArea = new TextArea();
 		
@@ -185,8 +179,10 @@ public class Sgs2 implements EntryPoint {
 		groovyShellService.getLatestScript(getSecureToken(), getLatestScriptAsyncCallback());
 				
 		// Setup Auto Save Timer
+		autoSaveConfigCheckBox.setValue(Boolean.TRUE);
+		autoSaveConfigCheckBox.addClickHandler(getAutoSaveConfigClickHandler());
 		autoSaveTimer = getAutoSaveTimer();
-		autoSaveTimer.scheduleRepeating(autoSaveInterval);
+		autoSaveTimer.scheduleRepeating(AppConstants.AUTO_SAVE_INTERVAL);
 		
 		// Configure Menus
 		fileMenu.setAnimationEnabled(true);
@@ -241,28 +237,34 @@ public class Sgs2 implements EntryPoint {
 		DecoratorPanel decoratorPanel = new DecoratorPanel();
 		decoratorPanel.add(statusPanel);
 		menuAndStatusPanel.add(decoratorPanel);
-		menuAndStatusPanel.setCellHorizontalAlignment(menu, HasHorizontalAlignment.ALIGN_LEFT);
-		menuAndStatusPanel.setCellHorizontalAlignment(decoratorPanel, HasHorizontalAlignment.ALIGN_RIGHT);
+		menuAndStatusPanel.setCellHorizontalAlignment(menu, HorizontalPanel.ALIGN_LEFT);
+		menuAndStatusPanel.setCellHorizontalAlignment(decoratorPanel, HorizontalPanel.ALIGN_RIGHT);
 		menuAndStatusPanel.setSpacing(3);
 		menuAndStatusPanel.setHeight("35px");
 		menuAndStatusPanel.setWidth("100%");
 		
 		// Button Panel
-		buttonPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
 		buttonPanel.setWidth("100%");
 		buttonPanel.setSpacing(3);
 		buttonPanel.add(clearButton);
 		buttonPanel.add(parseButton);
 		buttonPanel.add(runButton);
-		buttonPanel.setCellHorizontalAlignment(runButton, HasHorizontalAlignment.ALIGN_RIGHT);
-		buttonPanel.setCellHorizontalAlignment(parseButton, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonPanel.setCellHorizontalAlignment(runButton, HorizontalPanel.ALIGN_RIGHT);
+		buttonPanel.setCellHorizontalAlignment(parseButton, HorizontalPanel.ALIGN_RIGHT);
 		
 		// Adding widgets to vertical panel
 		inputVerticalPanel.add(menuAndStatusPanel);
-		scriptNamePanel.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
+		scriptNamePanel.setWidth("100%");
+		//scriptNamePanel.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
 		scriptNamePanel.setSpacing(3);
+		scriptLabel.setWidth("7px");
 		scriptNamePanel.add(scriptLabel);
 		scriptNamePanel.add(scriptName);
+		scriptNamePanel.add(autoSaveConfigCheckBox);
+		scriptNamePanel.setCellHorizontalAlignment(scriptLabel, HorizontalPanel.ALIGN_LEFT);
+		scriptNamePanel.setCellHorizontalAlignment(scriptName, HorizontalPanel.ALIGN_LEFT);
+		scriptNamePanel.setCellHorizontalAlignment(autoSaveConfigCheckBox, HorizontalPanel.ALIGN_RIGHT);
 		inputVerticalPanel.setWidth("100%");
 		inputVerticalPanel.add(scriptNamePanel);
 		inputVerticalPanel.add(textArea);
@@ -316,6 +318,28 @@ public class Sgs2 implements EntryPoint {
 		resetPanels();
 	}
 	
+	private ClickHandler getAutoSaveConfigClickHandler() {
+		return new ClickHandler() {
+			public void onClick(ClickEvent event) {
+				boolean isChecked = ((CheckBox)event.getSource()).getValue().booleanValue();
+				if(isChecked) {
+					if(null == autoSaveTimer) {
+						addConsoleMessage(i18nC.autoSaveConfigEnabled());
+						autoSaveTimer = getAutoSaveTimer();
+						autoSaveTimer.scheduleRepeating(AppConstants.AUTO_SAVE_INTERVAL);
+					}
+				}
+				else {
+					if(null != autoSaveTimer) {
+						addConsoleMessage(i18nC.autoSaveConfigDisabled());
+						autoSaveTimer.cancel();
+						autoSaveTimer = null;
+					}
+				}
+			}
+		};
+	}
+
 	private ClickHandler getClearClickHandler() {
 		return new ClickHandler() {
 			public void onClick(ClickEvent event) {
@@ -430,14 +454,14 @@ public class Sgs2 implements EntryPoint {
 				horizontalPanel.setSpacing(3);
 				horizontalPanel.add(new Label(i18nC.dialogSaveName()));
 				final TextBox textBox = new TextBox();
-				textBox.setMaxLength(254);
+				textBox.setMaxLength(AppConstants.SCRIPT_NAME_LENGTH);
 				horizontalPanel.add(textBox);
 				dialogBox.addContent(horizontalPanel);
 				dialogBox.addButton(i18nC.dialogSaveButton(), new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						String name = textBox.getText();
 						// Check input name legnth < 255
-						if(name.length() > 254) {
+						if(name.length() > AppConstants.SCRIPT_NAME_LENGTH) {
 							displayErrorDialog(i18nC.dialogErrorMsg());
 						}
 						else {
@@ -550,7 +574,7 @@ public class Sgs2 implements EntryPoint {
 						status.setHTML("");
 					}
 				};
-				statusSaveTimer.schedule(saveStatusChange);
+				statusSaveTimer.schedule(AppConstants.AUTO_SAVE_STATUS_CHANGE);
 			}
 		};
 	}
@@ -570,7 +594,7 @@ public class Sgs2 implements EntryPoint {
 						status.setHTML("");
 					}
 				};
-				statusAutoSaveTimer.schedule(autoSaveStatusChange);
+				statusAutoSaveTimer.schedule(AppConstants.AUTO_SAVE_STATUS_CHANGE);
 			}			
 		};
 	}
@@ -761,7 +785,12 @@ public class Sgs2 implements EntryPoint {
 	}
 	
 	private String getSecureToken() {
-		return Cookies.getCookie("JSESSIONID");
+		return Cookies.getCookie(AppConstants.SECURE_TOKEN_NAME);
+	}
+	
+	private void addConsoleMessage(String message) {
+		consoleFlowPanel.add(new HTML(message));
+		resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 	}
 	
 	// JSNI
