@@ -51,8 +51,10 @@ import com.google.gwt.user.client.rpc.ServiceDefTarget;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DecoratorPanel;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -62,6 +64,7 @@ import com.google.gwt.user.client.ui.TabPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 
 /**
@@ -101,8 +104,6 @@ public class Sgs2 implements EntryPoint {
 	private VerticalPanel inputVerticalPanel = null;
 	private HorizontalPanel menuAndStatusPanel = null;
 	private VerticalPanel statusPanel = null;
-	private HorizontalPanel buttonPanel = null;
-	private HorizontalPanel scriptNamePanel = null;
 
 	private TabPanel resultTabPanel = null;
 	
@@ -113,7 +114,10 @@ public class Sgs2 implements EntryPoint {
 	
 	private HTML status = null;
 	
-	private String scriptUuid = null;	
+	private String scriptUuid = null;
+	
+	private FlexTable statusFlexTable = null;
+	private FlexTable buttonFlexTable =  null;
 	
 	// I18N
 	I18nConstants i18nC = null;
@@ -139,9 +143,7 @@ public class Sgs2 implements EntryPoint {
 		mainVerticalPanel = new VerticalPanel();
 		inputVerticalPanel = new VerticalPanel();
 		menuAndStatusPanel = new HorizontalPanel();
-		buttonPanel = new HorizontalPanel();
 		statusPanel = new VerticalPanel();
-		scriptNamePanel = new HorizontalPanel();
 		
 		status = new HTML("");
 		
@@ -168,6 +170,9 @@ public class Sgs2 implements EntryPoint {
 		fileMenu = new MenuBar(true);
 		editMenu = new MenuBar(true);
 		scriptsMenu = new Sgs2MenuBar(true);
+		
+		statusFlexTable = new FlexTable();
+		buttonFlexTable = new FlexTable();
 	}
 	
 	public void onModuleLoad() {
@@ -244,31 +249,35 @@ public class Sgs2 implements EntryPoint {
 		menuAndStatusPanel.setWidth("100%");
 		
 		// Button Panel
-		buttonPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
-		buttonPanel.setWidth("100%");
-		buttonPanel.setSpacing(3);
-		buttonPanel.add(clearButton);
-		buttonPanel.add(parseButton);
-		buttonPanel.add(runButton);
-		buttonPanel.setCellHorizontalAlignment(runButton, HorizontalPanel.ALIGN_RIGHT);
-		buttonPanel.setCellHorizontalAlignment(parseButton, HorizontalPanel.ALIGN_RIGHT);
+		buttonFlexTable.setWidth("100%");
+		FlexCellFormatter buttonCellFormatter = buttonFlexTable.getFlexCellFormatter();
+		buttonCellFormatter.setWidth(0, 1, "70px");
+		buttonCellFormatter.setWidth(0, 2, "70px");
+		buttonCellFormatter.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonCellFormatter.setHorizontalAlignment(0, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonCellFormatter.setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		clearButton.setWidth("60px");
+		parseButton.setWidth("60px");
+		runButton.setWidth("60px");
+		buttonFlexTable.setWidget(0, 0, clearButton);
+		buttonFlexTable.setWidget(0, 1, parseButton);
+		buttonFlexTable.setWidget(0, 2, runButton);
 		
 		// Adding widgets to vertical panel
 		inputVerticalPanel.add(menuAndStatusPanel);
-		scriptNamePanel.setWidth("100%");
-		//scriptNamePanel.setHorizontalAlignment(HorizontalPanel.ALIGN_LEFT);
-		scriptNamePanel.setSpacing(3);
-		scriptLabel.setWidth("7px");
-		scriptNamePanel.add(scriptLabel);
-		scriptNamePanel.add(scriptName);
-		scriptNamePanel.add(autoSaveConfigCheckBox);
-		scriptNamePanel.setCellHorizontalAlignment(scriptLabel, HorizontalPanel.ALIGN_LEFT);
-		scriptNamePanel.setCellHorizontalAlignment(scriptName, HorizontalPanel.ALIGN_LEFT);
-		scriptNamePanel.setCellHorizontalAlignment(autoSaveConfigCheckBox, HorizontalPanel.ALIGN_RIGHT);
+
+		statusFlexTable.setWidth("100%");
+		FlexCellFormatter statusCellFormatter = statusFlexTable.getFlexCellFormatter();
+		statusCellFormatter.setWidth(0, 0, "50px");
+		statusCellFormatter.setHorizontalAlignment(0, 2, HasHorizontalAlignment.ALIGN_RIGHT);
+		statusFlexTable.setWidget(0, 0, scriptLabel);
+		statusFlexTable.setWidget(0, 1, scriptName);
+		statusFlexTable.setWidget(0, 2, autoSaveConfigCheckBox);
+		
 		inputVerticalPanel.setWidth("100%");
-		inputVerticalPanel.add(scriptNamePanel);
+		inputVerticalPanel.add(statusFlexTable);
 		inputVerticalPanel.add(textArea);
-		inputVerticalPanel.add(buttonPanel);
+		inputVerticalPanel.add(buttonFlexTable);
 		mainVerticalPanel.setWidth("100%");
 		mainVerticalPanel.add(inputVerticalPanel);
 		mainVerticalPanel.add(resultTabPanel);
@@ -454,6 +463,7 @@ public class Sgs2 implements EntryPoint {
 				horizontalPanel.setSpacing(3);
 				horizontalPanel.add(new Label(i18nC.dialogSaveName()));
 				final TextBox textBox = new TextBox();
+				textBox.setText((null != scriptName ? scriptName.getText() : ""));
 				textBox.setMaxLength(AppConstants.SCRIPT_NAME_LENGTH);
 				horizontalPanel.add(textBox);
 				dialogBox.addContent(horizontalPanel);
@@ -470,8 +480,7 @@ public class Sgs2 implements EntryPoint {
 								dialogBox.hide();
 							}
 							else {
-								consoleFlowPanel.add(new HTML(i18nC.commandSaveAsMsg()));
-								resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+								addConsoleMessage(i18nC.commandSaveAsMsg());
 							}
 						}
 					}
@@ -497,8 +506,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<FavoriteResult> getFavoriteAsyncCallback() {
 		return new AsyncCallback<FavoriteResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(FavoriteResult result) {
 				Collection<String> scriptNames = result.getFavorite();
@@ -518,8 +526,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptResult> getScriptResultAsyncCallback() {
 		return new AsyncCallback<ScriptResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(ScriptResult result) {
 				checkResult(result, null);
@@ -534,15 +541,13 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<MarkAsFavoriteResult> getMarkAsFavoriteAsyncCallback() {
 		return new AsyncCallback<MarkAsFavoriteResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(final MarkAsFavoriteResult result) {
 				checkResult(result, null);
 
 				if(menuBarHasName(scriptsMenu, result.getName())) {
-					consoleFlowPanel.add(new HTML(i18nM.asyncCallbackMarkAsFavorite(result.getName())));
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					addConsoleMessage(i18nM.asyncCallbackMarkAsFavorite(result.getName()));
 				}
 				else {
 					scriptsMenu.addItem(result.getName(), new Command() {
@@ -551,8 +556,7 @@ public class Sgs2 implements EntryPoint {
 						}
 					});
 
-					consoleFlowPanel.add(new HTML(i18nM.asyncCallbackMarkAsFavorite(result.getName())));
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					addConsoleMessage(i18nM.asyncCallbackMarkAsFavorite(result.getName()));
 				}
 			}
 		};
@@ -561,8 +565,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<SaveResult> getSaveAsyncCallback() {
 		return new AsyncCallback<SaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
@@ -583,8 +586,7 @@ public class Sgs2 implements EntryPoint {
 		return new AsyncCallback<SaveResult>() {
 
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
@@ -603,8 +605,7 @@ public class Sgs2 implements EntryPoint {
 
 		return new AsyncCallback<SaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(SaveResult result) {
 
@@ -619,8 +620,7 @@ public class Sgs2 implements EntryPoint {
 					dialogBox.show();
 				}
 				else {
-					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackSaveAsMsg2()));
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					addConsoleMessage(i18nC.asyncCallbackSaveAsMsg2());
 					scriptName.setText(result.getName());
 				}
 			}
@@ -630,8 +630,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<LatestScriptResult> getLatestScriptAsyncCallback() {
 		return new AsyncCallback<LatestScriptResult> () {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(LatestScriptResult result) {
 				
@@ -654,8 +653,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<InitAutoSaveResult> getInitAutoSaveAsyncCallback() {
 		return new AsyncCallback<InitAutoSaveResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(InitAutoSaveResult result) {
 				
@@ -665,8 +663,7 @@ public class Sgs2 implements EntryPoint {
 				
 				if(null == scriptUuid || "".equals(scriptUuid)) {
 					
-					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackInitAutoSaveMsg()));
-					resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+					addConsoleMessage(i18nC.asyncCallbackInitAutoSaveMsg());
 				}
 			}
 		};
@@ -675,8 +672,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptParseResult> getParseAsyncCallback() {
 		return new AsyncCallback<ScriptParseResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 			}
 			public void onSuccess(ScriptParseResult result) {
 
@@ -684,12 +680,11 @@ public class Sgs2 implements EntryPoint {
 				
 				String stackTrace = result.getStackTrace();
 				if(null == stackTrace || "".equals(stackTrace)) {
-					consoleFlowPanel.add(new HTML(i18nC.asyncCallbackParseMsg()));
+					addConsoleMessage(i18nC.asyncCallbackParseMsg());
 				}
 				else {
-					consoleFlowPanel.add(new HTML(result.getStackTrace()));
+					addConsoleMessage(result.getStackTrace());
 				}
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 		};
 	}
@@ -698,8 +693,7 @@ public class Sgs2 implements EntryPoint {
 	private AsyncCallback<ScriptExecutionResult> getRunAsyncCallback() {
 		return new AsyncCallback<ScriptExecutionResult>() {
 			public void onFailure(Throwable caught) {
-				consoleFlowPanel.add(new HTML(caught.getMessage()));
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+				addConsoleMessage(caught.getMessage());
 				runButton.setEnabled(true);
 			}
 
@@ -749,8 +743,7 @@ public class Sgs2 implements EntryPoint {
 	protected void checkResult(AsyncCallbackResult asyncCallbackResult, ErrorAction errorAction) {
 		
 		if(null == asyncCallbackResult) {
-			consoleFlowPanel.add(new HTML(i18nC.checkResultMsg() + new Date().toString()));
-			resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
+			addConsoleMessage(i18nC.checkResultMsg() + new Date().toString());
 			
 			if(null != errorAction) {
 				errorAction.run();
@@ -797,5 +790,10 @@ public class Sgs2 implements EntryPoint {
 	private native Document getWindowParentDocument() /*-{
 		return $wnd.parent.document
 	}-*/;
+	
+//	private native boolean matches(String regExp, String value) /*-{
+//		var pattern = new RegExp(regExp);
+//		return value.search(pattern) != -1;
+//	}-*/;
 	
 }
