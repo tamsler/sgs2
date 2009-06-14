@@ -32,7 +32,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface GroovyShellServiceAsync {
 	
-	void run(String sourceCode, String secureToken, AsyncCallback<ScriptExecutionResult> callback);
+	void run(String name, String sourceCode, String secureToken, AsyncCallback<ScriptExecutionResult> callback);
 	
 	void parse(String sourceCode, String secureToken, AsyncCallback<ScriptParseResult> callback);
 	

@@ -84,10 +84,11 @@ public class GroovyShellManagerImpl extends HibernateDaoSupport implements Groov
 	public Script getScript(String userId, String name) {
 		DetachedCriteria d = DetachedCriteria.forClass(Script.class)
 		.add(Restrictions.eq("name", name))
-		.add(Restrictions.eq("userId", userId));
+		.add(Restrictions.eq("userId", userId))
+		.addOrder(Order.desc("actionDate"));
 		List<Script> scripts = getHibernateTemplate().findByCriteria(d);
 		
-		if(null != scripts && scripts.size() == 1) {
+		if(null != scripts && scripts.size() > 0) {
 			
 			return scripts.get(0);
 		}

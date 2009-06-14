@@ -55,7 +55,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 	private ScriptMock latestScriptRef = null;
 
 	// Mock Impl
-	public ScriptExecutionResult run(String sourceCode, String secureToken) 
+	public ScriptExecutionResult run(String name, String sourceCode, String secureToken) 
 		throws RpcSecurityException, Server500Exception {
 
 		StringWriter output = new StringWriter();

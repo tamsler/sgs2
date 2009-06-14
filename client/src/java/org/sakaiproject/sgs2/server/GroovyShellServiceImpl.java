@@ -58,7 +58,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	private GroovyShellManager groovyShellManager;
 	
 	// API Impl
-	public ScriptExecutionResult run(String sourceCode, String secureToken)
+	public ScriptExecutionResult run(String name, String sourceCode, String secureToken)
 		throws RpcSecurityException, Server500Exception {
 		
 		isSecure(secureToken);
@@ -107,6 +107,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 			LOG.error("Was not able to get userId from userEid : userEid = " + userEid);
 			script.setUserId(userEid);
 		}
+		script.setName(name);
 		script.setScript(sourceCode);
 		script.setOutput((null == output || "".equals(output)) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
 		script.setResult((null == result || "".equals(result)) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());

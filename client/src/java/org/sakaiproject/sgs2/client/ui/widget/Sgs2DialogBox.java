@@ -26,17 +26,19 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class Sgs2DialogBox extends DialogBox {
 
 	private Button button = null;
 	private VerticalPanel mainVerticalPanel = null;
 	private VerticalPanel verticalPanel = null;
-	private HorizontalPanel horizontalPanel = null;
 	private HandlerRegistration handlerRegistration = null;
+	private FlexTable buttonFlexTable = null;
 	
 	// I18N
 	I18nConstants i18n = null;
@@ -54,11 +56,14 @@ public class Sgs2DialogBox extends DialogBox {
 		verticalPanel.addStyleName("dialogVPanel");
 		verticalPanel.setHorizontalAlignment(VerticalPanel.ALIGN_LEFT);
 		mainVerticalPanel.add(verticalPanel);
-		horizontalPanel = new HorizontalPanel();
-		horizontalPanel.setWidth("100%");
-		horizontalPanel.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
-		horizontalPanel.add(button);
-		mainVerticalPanel.add(horizontalPanel);
+		
+		buttonFlexTable = new FlexTable();
+		buttonFlexTable.setCellSpacing(3);
+		buttonFlexTable.setWidth("100%");
+		FlexCellFormatter buttonCellFormatter = buttonFlexTable.getFlexCellFormatter();
+		buttonCellFormatter.setHorizontalAlignment(0, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonFlexTable.setWidget(0, 0, button);		
+		mainVerticalPanel.add(buttonFlexTable);
 		setWidget(mainVerticalPanel);
 		handlerRegistration = button.addClickHandler(getButtonClickHandler());
 		
@@ -92,6 +97,10 @@ public class Sgs2DialogBox extends DialogBox {
 	public void addButton(String label, ClickHandler clickHandler) {
 		Button newButton = new Button(label);
 		newButton.addClickHandler(clickHandler);
-		horizontalPanel.add(newButton);
+		int columnIndex = buttonFlexTable.getCellCount(0);
+		FlexCellFormatter buttonCellFormatter = buttonFlexTable.getFlexCellFormatter();
+		buttonCellFormatter.setHorizontalAlignment(0, columnIndex, HasHorizontalAlignment.ALIGN_RIGHT);
+		buttonCellFormatter.setWidth(0, columnIndex, "50px");
+		buttonFlexTable.setWidget(0, columnIndex, newButton);
 	}
 }

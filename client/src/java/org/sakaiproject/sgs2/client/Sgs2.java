@@ -292,7 +292,6 @@ public class Sgs2 implements EntryPoint {
 		// Focus the cursor on the text area when the application loads
 		textArea.setFocus(true);
 		textArea.selectAll();
-		
 	}
 
 	// Methods
@@ -307,6 +306,7 @@ public class Sgs2 implements EntryPoint {
 			if(iframe.getId().startsWith("Main")) {
 				iframe.setAttribute("height", setHeight + "px");
 				iframe.setAttribute("style", "height: " + setHeight + "px;");
+				// IE Fix
 				iframe.getStyle().setPropertyPx("height", setHeight);
 				break;
 			}
@@ -372,7 +372,7 @@ public class Sgs2 implements EntryPoint {
 			public void onClick(ClickEvent event) {
 				beforeRun();
 				String sourceCode = textArea.getText();
-				groovyShellService.run(sourceCode, getSecureToken(), getRunAsyncCallback());
+				groovyShellService.run(scriptName.getText(), sourceCode, getSecureToken(), getRunAsyncCallback());
 			}
 		};
 	}
@@ -382,15 +382,14 @@ public class Sgs2 implements EntryPoint {
 			public void execute() {
 				Collection<String> cookyNames = Cookies.getCookieNames();
 				if(cookyNames.size() == 0) {
-					consoleFlowPanel.add(new HTML(i18nC.commandCookiesMsg1() + new Date().toString()));
+					addConsoleMessage(i18nC.commandCookiesMsg1() + new Date().toString());
 				}
 				else {
-					consoleFlowPanel.add(new HTML(i18nC.commandCookiesMsg2() + new Date().toString()));
+					addConsoleMessage(i18nC.commandCookiesMsg2() + new Date().toString());
 					for(String cookyName : cookyNames) {
-						consoleFlowPanel.add(new HTML(i18nC.commandCookiesName() + cookyName + "<br/>"+ i18nC.commandCookiesValue() + Cookies.getCookie(cookyName)));
+						addConsoleMessage(i18nC.commandCookiesName() + cookyName + "<br/>"+ i18nC.commandCookiesValue() + Cookies.getCookie(cookyName));
 					}
 				}
-				resultTabPanel.selectTab(TabbedPanel.CONSOLE.position);
 			}
 		};
 	}
@@ -470,14 +469,19 @@ public class Sgs2 implements EntryPoint {
 				dialogBox.addButton(i18nC.dialogSaveButton(), new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						String name = textBox.getText();
-						// Check input name legnth < 255
+						// Check input name length < 255
 						if(name.length() > AppConstants.SCRIPT_NAME_LENGTH) {
 							displayErrorDialog(i18nC.dialogErrorMsg());
 						}
 						else {
 							if(null != name && !"".equals(name)) {
-								groovyShellService.saveAs(scriptUuid, name, textArea.getText(), ActionType.USER_SAVE_AS, getSecureToken(), getSaveAsAsyncCallback());
-								dialogBox.hide();
+								if(name.contains("<script") || name.contains("</script")) {
+									displayErrorDialog(i18nC.dialogSaveNameErrorMessage());
+								}
+								else {
+									groovyShellService.saveAs(scriptUuid, name, textArea.getText(), ActionType.USER_SAVE_AS, getSecureToken(), getSaveAsAsyncCallback());
+									dialogBox.hide();
+								}
 							}
 							else {
 								addConsoleMessage(i18nC.commandSaveAsMsg());
@@ -569,8 +573,7 @@ public class Sgs2 implements EntryPoint {
 			}
 			public void onSuccess(SaveResult result) {
 				checkResult(result, null);
-
-				status.setHTML(i18nC.asyncCallbackSave());
+				addConsoleMessage(i18nC.asyncCallbackSave());
 				statusSaveTimer = new Timer() {
 					@Override
 					public void run() {
@@ -790,10 +793,4 @@ public class Sgs2 implements EntryPoint {
 	private native Document getWindowParentDocument() /*-{
 		return $wnd.parent.document
 	}-*/;
-	
-//	private native boolean matches(String regExp, String value) /*-{
-//		var pattern = new RegExp(regExp);
-//		return value.search(pattern) != -1;
-//	}-*/;
-	
 }

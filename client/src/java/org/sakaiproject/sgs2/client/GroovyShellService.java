@@ -59,6 +59,7 @@ public interface GroovyShellService extends RemoteService {
 	/**
 	 * Run.
 	 * 
+	 * @param name the name
 	 * @param sourceCode the source code
 	 * @param secureToken the secure token
 	 * 
@@ -67,7 +68,7 @@ public interface GroovyShellService extends RemoteService {
 	 * @throws RpcSecurityException the rpc security exception
 	 * @throws Server500Exception the server500 exception
 	 */
-	public ScriptExecutionResult run(String sourceCode, String secureToken)
+	public ScriptExecutionResult run(String name, String sourceCode, String secureToken)
 		throws RpcSecurityException, Server500Exception;
 	
 	/**

@@ -64,6 +64,7 @@ public interface I18nConstants extends Constants {
 	String dialogErrorMsg();
 	String dialogCancelButton();
 	String dialogSaveName();
+	String dialogSaveNameErrorMessage();
 	
 	String commandSaveAsMsg();
 	
@@ -89,4 +90,5 @@ public interface I18nConstants extends Constants {
 	String autoSaveConfigEnabled();
 	
 	String autoSaveConfigDisabled();
+	
 }
