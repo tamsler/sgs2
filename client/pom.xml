@@ -29,7 +29,7 @@
 	</repositories>
 <!--  convenience to define GWT version in one place -->
 	<properties>
-		<gwtVersion>1.6.4</gwtVersion>
+		<gwtVersion>1.7.0</gwtVersion>
 		<!-- <platform>mac</platform> -->
 <!-- This could also be done via the bellow defined profiles -->
 	</properties>
