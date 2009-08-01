@@ -474,7 +474,7 @@ public class Sgs2 implements EntryPoint {
 							displayErrorDialog(i18nC.dialogErrorMsg());
 						}
 						else {
-							if(null != name && !"".equals(name)) {
+							if(!"".equals(name)) {
 								if(name.contains("<script") || name.contains("</script")) {
 									displayErrorDialog(i18nC.dialogSaveNameErrorMessage());
 								}

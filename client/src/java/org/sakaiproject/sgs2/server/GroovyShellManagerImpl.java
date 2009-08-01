@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -36,8 +34,6 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 public class GroovyShellManagerImpl extends HibernateDaoSupport implements GroovyShellManager {
-
-	private static final Log LOG = LogFactory.getLog(GroovyShellManagerImpl.class);
 	
 	public Long save(Script script) {
 		return (Long) getHibernateTemplate().save(script);

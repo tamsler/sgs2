@@ -41,7 +41,7 @@ public interface GroovyShellService extends RemoteService {
 	/**
 	 * The Enum ActionType.
 	 */
-	enum ActionType { AUTO_SAVE("auto_save"), USER_SAVE("user_save"), USER_SAVE_AS("user_save_as"), SCRIPT_EXECUTION("script_execution");
+	public enum ActionType { AUTO_SAVE("auto_save"), USER_SAVE("user_save"), USER_SAVE_AS("user_save_as"), SCRIPT_EXECUTION("script_execution");
 	
 		/** The name. */
 		public String name;

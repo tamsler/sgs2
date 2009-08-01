@@ -57,6 +57,7 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 	private SecurityService securityService;
 	private GroovyShellManager groovyShellManager;
 	
+	
 	// API Impl
 	public ScriptExecutionResult run(String name, String sourceCode, String secureToken)
 		throws RpcSecurityException, Server500Exception {
@@ -109,9 +110,9 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		}
 		script.setName(name);
 		script.setScript(sourceCode);
-		script.setOutput((null == output || "".equals(output)) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
-		script.setResult((null == result || "".equals(result)) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
-		script.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
+		script.setOutput((null == output || "".equals(output.toString())) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
+		script.setResult((null == result || "".equals(result.toString())) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
+		script.setStackTrace((null == stackTrace || "".equals(stackTrace.toString())) ? null : stackTrace.toString());
 		script.setActionType(ActionType.SCRIPT_EXECUTION.name);
 		script.setActionDate(new Date());
 		
@@ -127,9 +128,9 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		
 		// Sending result back to the client
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
-		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
-		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
+		scriptExecutionResult.setOutput((null == output || "".equals(output.toString())) ? null : "[" + executionTimeInMillis + "ms] " + output.toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result.toString())) ? null : "[" + executionTimeInMillis + "ms] " + result.toString());
+		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace.toString())) ? null : stackTrace.toString());
 		
 		return scriptExecutionResult;
 	}
@@ -141,17 +142,17 @@ public class GroovyShellServiceImpl extends GWTSpringController implements Groov
 		isSecure(secureToken);
 		
 		StringWriter stackTrace = new StringWriter();
-		
-		groovy.lang.Script script = null;
+
+		GroovyShell groovyShell = new GroovyShell();
 		
 		try {
 			
-			script = new GroovyShell().parse(sourceCode);
-			
+			groovyShell.parse(sourceCode);
+
 		} catch (CompilationFailedException cfe) {
-			
-			  stackTrace.append(cfe.getMessage());
-			  
+
+			stackTrace.append(cfe.getMessage());
+
 		} catch (Exception e) {
 			  
 			 stackTrace.append(e.getMessage());

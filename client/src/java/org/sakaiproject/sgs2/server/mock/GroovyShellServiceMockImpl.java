@@ -79,9 +79,9 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 		}
 
 		ScriptExecutionResult scriptExecutionResult = new ScriptExecutionResult();
-		scriptExecutionResult.setOutput((null == output || "".equals(output)) ? null : output.toString());
-		scriptExecutionResult.setResult((null == result || "".equals(result)) ? null : result.toString());
-		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace)) ? null : stackTrace.toString());
+		scriptExecutionResult.setOutput((null == output || "".equals(output.toString())) ? null : output.toString());
+		scriptExecutionResult.setResult((null == result || "".equals(result.toString())) ? null : result.toString());
+		scriptExecutionResult.setStackTrace((null == stackTrace || "".equals(stackTrace.toString())) ? null : stackTrace.toString());
 
 		return scriptExecutionResult;
 	}
@@ -92,11 +92,11 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 		StringWriter stackTrace = new StringWriter();
 
-		groovy.lang.Script script = null;
+		GroovyShell groovyShell = new GroovyShell();
 
 		try {
 
-			script = new GroovyShell().parse(sourceCode);
+			groovyShell.parse(sourceCode);
 
 		} catch (CompilationFailedException cfe) {
 
@@ -239,7 +239,7 @@ public class GroovyShellServiceMockImpl extends RemoteServiceServlet implements 
 
 		}
 
-		saveResult.setActionType(actionType.AUTO_SAVE);
+		saveResult.setActionType(ActionType.AUTO_SAVE);
 		return saveResult;
 	}
 
